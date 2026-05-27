@@ -33,6 +33,30 @@ var P = {
 
 var BULLETS = [];
 
+// Cache de sprites sem fundo branco
+var IMGS_CLEAN = {};
+
+function removeWhiteBg(img){
+  var cv = document.createElement('canvas');
+  cv.width = img.width; cv.height = img.height;
+  var cx = cv.getContext('2d');
+  cx.drawImage(img, 0, 0);
+  var d = cx.getImageData(0, 0, cv.width, cv.height);
+  for(var i = 0; i < d.data.length; i += 4){
+    var r=d.data[i], g=d.data[i+1], b=d.data[i+2];
+    if(r > 220 && g > 220 && b > 220) d.data[i+3] = 0;
+  }
+  cx.putImageData(d, 0, 0);
+  return cv;
+}
+
+function getCleanImg(key){
+  if(!IMGS_CLEAN[key] && IMGS[key]){
+    IMGS_CLEAN[key] = removeWhiteBg(IMGS[key]);
+  }
+  return IMGS_CLEAN[key];
+}
+
 function updatePlayer(){
   if(P.dead) return;
   INPUT._updateKeyboard();
@@ -132,7 +156,7 @@ function drawPlayer(ctx){
   if(P.inv>0 && Math.floor(P.inv/6)%2===0) return;
   var px=Math.round(P.x-camX);
   var sprMap={0:'idle',1:'run1',2:'run2',3:'jump',4:'crouch'};
-  var img=IMGS[sprMap[P.animFrame]];
+  var img=getCleanImg(sprMap[P.animFrame]);
   if(!img) return;
   var dH=(P.animFrame===4)?Math.round(GAB_H*0.7):GAB_H;
   var dW=Math.round(img.width*(dH/img.height));
