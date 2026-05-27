@@ -111,7 +111,7 @@ if(IS_MOBILE){
     var H = window.innerHeight;
     var S = Math.min(W, H) * 0.14; // tamanho dos botões
     var M = Math.min(W, H) * 0.04; // margem das bordas
-    var G = Math.min(W, H) * 0.02; // gap entre botões
+    var G = Math.min(W, H) * 0.05; // gap entre botões
 
     // ---- LADO ESQUERDO ----
     // ◄ e ► na mesma linha
