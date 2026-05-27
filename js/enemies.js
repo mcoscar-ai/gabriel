@@ -23,10 +23,10 @@ var ENEMY_TYPES = {
   light: {
     key:        'guard_light',
     hp:         2,
-    speed:      3.5,
+    speed:      2.8,
     detectRange:220,
     attackRange:50,
-    damage:     2,
+    damage:     1,
     score:      100,
     canShoot:   false,
     shootCool:  0,
@@ -188,10 +188,14 @@ function updateEnemies(){
         e.dir = dx > 0 ? 1 : -1;
         e.vx  = e.dir * e.speed * 1.3;
 
-        // Guard light salta em direção ao Gabriel quando está perto!
+        // Guard light salta em direção ao Gabriel — só a cada 90 frames
         if(e.typeName === 'light' && dist < 180 && e.onGround){
-          e.vy = -10; // pulo
+          if(!e.jumpCool || e.jumpCool <= 0){
+            e.vy       = -10;
+            e.jumpCool = 90;
+          }
         }
+        if(e.jumpCool > 0) e.jumpCool--;
 
         // Animação bob mais rápido ao correr
         e.bobTick++;
