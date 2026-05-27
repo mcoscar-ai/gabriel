@@ -58,31 +58,31 @@ function drawHUDBar(ctx, W){
 }
 
 // ============================================================
-// ÍCONES DE VIDA
+// ÍCONES DE VIDA — coração grande + x + número
 // ============================================================
 function drawLives(ctx, W, H){
   var img      = IMGS['life'];
-  var iconSize = 18;
-  var startX   = 8;
-  var startY   = 5;
-  var perRow   = 8;
-  var gap      = 2;
+  var iconSize = 24;
+  var x        = 8;
+  var y        = 2;
 
-  for(var i = 0; i < P.lives; i++){
-    var col = i % perRow;
-    var row = Math.floor(i / perRow);
-    var ix  = startX + col * (iconSize + gap);
-    var iy  = startY + row * (iconSize + gap);
-
-    if(img){
-      ctx.drawImage(img, ix, iy, iconSize, iconSize);
-    } else {
-      // Fallback — coração vermelho
-      ctx.fillStyle = '#ff3355';
-      ctx.font = '14px monospace';
-      ctx.fillText('♥', ix, iy + 13);
-    }
+  if(img){
+    ctx.drawImage(img, x, y, iconSize, iconSize);
+  } else {
+    ctx.fillStyle = '#ff3355';
+    ctx.font = 'bold 20px monospace';
+    ctx.fillText('♥', x, y + 18);
   }
+
+  // "x" pequeno
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.font = 'bold 10px "Courier New", monospace';
+  ctx.fillText('x', x + iconSize + 2, y + 16);
+
+  // Número grande e branco
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 16px "Courier New", monospace';
+  ctx.fillText(P.lives, x + iconSize + 12, y + 17);
 }
 
 // ============================================================
