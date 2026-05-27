@@ -45,6 +45,7 @@ var ENEMY_TYPES = {
     shootCool:  90,
     w:          44,
     h:          115,
+    flipDefault: true,
   },
   armored: {
     key:        'guard_armored',
@@ -126,6 +127,7 @@ function spawnEnemies(){
       dir:        1,            // começa indo para direita
       spawnX:     def.x,        // ponto de spawn para patrulha
       patrolDist: 120,          // distância de patrulha do spawn
+      flipDefault: type.flipDefault || false,
       // Visual
       inv:        0,            // frames de invencibilidade ao levar hit
       deadTimer:  0,            // timer para remover após morte
@@ -360,7 +362,7 @@ function drawEnemies(ctx){
       var dW  = Math.round(img.width * (dH / img.height));
       var bX  = sx + Math.round((e.w - dW) / 2);
       var bY  = Math.round(e.y + e.bobY) + (e.h - dH);
-      var flip = (e.dir < 0);
+      var flip = e.flipDefault ? (e.dir > 0) : (e.dir < 0);
       ctx.save();
       if(flip){
         ctx.translate(bX + dW, bY);
