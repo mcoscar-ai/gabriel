@@ -3,7 +3,7 @@
 
 var GROUND_Y  = 338;
 var GW        = 4000;
-var GAB_H     = 80;
+var GAB_H     = 110;
 var GAB_W     = 40;
 var camX      = 0;
 
