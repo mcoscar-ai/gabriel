@@ -46,7 +46,7 @@ var ENEMY_TYPES = {
     shootCool:  90,
     w:          44,
     h:          115,
-    flipDefault: true, // imagem já virada para esquerda
+    flipDefault: false, // imagem corrigida
   },
   armored: {
     key:        'guard_armored',
