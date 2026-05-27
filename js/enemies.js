@@ -22,42 +22,45 @@ var ENEMY_BULLETS = [];
 var ENEMY_TYPES = {
   light: {
     key:        'guard_light',
-    hp:         1,
+    hp:         2,
     speed:      2.5,
     detectRange:200,
-    attackRange:30,   // corpo a corpo
+    attackRange:30,
     damage:     1,
     score:      100,
     canShoot:   false,
     shootCool:  0,
-    w:          35,
-    h:          80,
+    w:          40,
+    h:          110,
+    flipDefault: false,
   },
   normal: {
     key:        'guard_normal',
-    hp:         2,
+    hp:         6,
     speed:      1.8,
     detectRange:280,
-    attackRange:200,  // atira de longe
+    attackRange:200,
     damage:     1,
     score:      200,
     canShoot:   true,
     shootCool:  90,
-    w:          38,
-    h:          85,
+    w:          44,
+    h:          115,
+    flipDefault: true, // imagem já virada para esquerda
   },
   armored: {
     key:        'guard_armored',
-    hp:         4,
+    hp:         8,
     speed:      1.0,
     detectRange:180,
-    attackRange:40,   // corpo a corpo
+    attackRange:40,
     damage:     2,
     score:      400,
     canShoot:   false,
     shootCool:  0,
-    w:          45,
-    h:          90,
+    w:          50,
+    h:          120,
+    flipDefault: false,
   },
 };
 
@@ -360,9 +363,10 @@ function drawEnemies(ctx){
       var dW  = Math.round(img.width * (dH / img.height));
       var bX  = sx + Math.round((e.w - dW) / 2);
       var bY  = Math.round(e.y + e.bobY) + (e.h - dH);
-
+      // flipDefault: imagem já virada para esquerda, inverte lógica
+      var flip = e.flipDefault ? (e.dir > 0) : (e.dir < 0);
       ctx.save();
-      if(e.dir < 0){
+      if(flip){
         ctx.translate(bX + dW, bY);
         ctx.scale(-1, 1);
         ctx.drawImage(img, 0, 0, dW, dH);
