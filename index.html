@@ -14,12 +14,12 @@
 <script src="js/assets.js"></script>
 <script src="js/input.js"></script>
 <script src="js/player.js"></script>
+<script src="js/renderer.js"></script>
 <script>
   var C = document.getElementById('c');
   var X = C.getContext('2d');
   var W = 800, H = 400;
   C.width = W; C.height = H;
-
   function resize(){
     var scaleX = window.innerWidth  / W;
     var scaleY = window.innerHeight / H;
@@ -30,18 +30,11 @@
   resize();
   window.addEventListener('resize', resize);
   window.addEventListener('orientationchange', function(){ setTimeout(resize, 200); });
-
   loadAllAssets().then(function(){
     function loop(){
       requestAnimationFrame(loop);
-      X.fillStyle = '#111';
-      X.fillRect(0, 0, W, H);
-      X.fillStyle = '#333';
-      X.fillRect(0, GROUND_Y, W, H - GROUND_Y);
-      PLATFORMS.forEach(function(pl){
-        X.fillStyle = '#555';
-        X.fillRect(pl.x - camX, pl.y, pl.w, pl.h);
-      });
+      X.clearRect(0, 0, W, H);
+      drawScene(X);
       updatePlayer();
       drawPlayer(X);
       drawBullets(X);
