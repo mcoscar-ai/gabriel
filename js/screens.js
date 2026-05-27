@@ -49,8 +49,8 @@ function updateIntro(){
 
   INTRO.charTimer++;
 
-  // Uma letra a cada 3 frames — devagar como terminal
-  if(INTRO.charTimer >= 3){
+  // Uma letra a cada 5 frames — bem devagar como terminal
+  if(INTRO.charTimer >= 5){
     INTRO.charTimer = 0;
     var line = INTRO.lines[INTRO.currentLine];
 
@@ -58,7 +58,7 @@ function updateIntro(){
       INTRO.currentChar++;
     } else {
       // Pausa maior em linhas especiais
-      var pause = (line === '') ? 20 : (line.indexOf('[') !== -1) ? 60 : 30;
+      var pause = (line === '') ? 30 : (line.indexOf('[') !== -1) ? 90 : 50;
       INTRO.lineTimer++;
       if(INTRO.lineTimer >= pause){
         INTRO.lineTimer   = 0;
@@ -77,89 +77,108 @@ function drawIntro(ctx, W, H){
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, W, H);
 
-  // Imagem do Gabriel COMPLETA no centro — scale min para não cortar
+  // LADO DIREITO — imagem do Gabriel completa
   var bg = IMGS['screen_room'];
   if(bg){
-    var scale = Math.min((W * 0.7) / bg.width, (H * 0.72) / bg.height);
+    var imgW  = Math.round(W * 0.45);
+    var scale = Math.min(imgW / bg.width, H / bg.height);
     var dw    = Math.round(bg.width  * scale);
     var dh    = Math.round(bg.height * scale);
-    var dx    = Math.round((W - dw) / 2);
-    var dy    = Math.round((H * 0.02));
+    var dx    = Math.round(W - dw - 10);
+    var dy    = Math.round((H - dh) / 2);
     ctx.drawImage(bg, dx, dy, dw, dh);
 
-    // Gradiente embaixo da imagem para fundir com a caixa de texto
-    var grad = ctx.createLinearGradient(0, dy + dh - 40, 0, dy + dh + 10);
-    grad.addColorStop(0, 'rgba(0,0,0,0)');
-    grad.addColorStop(1, 'rgba(0,0,0,1)');
+    // Gradiente esquerda da imagem para fundir
+    var grad = ctx.createLinearGradient(dx - 40, 0, dx + 60, 0);
+    grad.addColorStop(0, 'rgba(0,0,0,1)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = grad;
-    ctx.fillRect(dx, dy + dh - 40, dw, 50);
+    ctx.fillRect(dx - 40, 0, 100, H);
   }
 
-  // Caixa de texto — parte inferior, mais estreita
-  var boxW = W - 120;
-  var boxX = 60;
-  var boxH = 110;
-  var boxY = H - boxH - 8;
+  // Linha divisória neon
+  ctx.fillStyle = 'rgba(0,255,136,0.3)';
+  ctx.fillRect(Math.round(W * 0.52), 20, 1, H - 40);
 
-  ctx.fillStyle = 'rgba(0,0,0,0.85)';
-  ctx.fillRect(boxX, boxY, boxW, boxH);
-  ctx.strokeStyle = 'rgba(0,255,136,0.5)';
-  ctx.lineWidth   = 1.5;
-  ctx.strokeRect(boxX, boxY, boxW, boxH);
+  // LADO ESQUERDO — texto
+  var textX  = 20;
+  var textW  = Math.round(W * 0.50);
+  var lineH  = 22;
+  var startY = 30;
 
-  // Header da caixa
+  // Header
   ctx.fillStyle = '#00FF88';
-  ctx.font      = 'bold 9px "Courier New", monospace';
-  ctx.fillText('> GABRIEL_SHADOW_CIRCUIT.log', boxX + 10, boxY + 13);
-  ctx.fillStyle = 'rgba(0,255,136,0.25)';
-  ctx.fillRect(boxX, boxY + 16, boxW, 1);
+  ctx.font      = 'bold 11px "Courier New", monospace';
+  ctx.fillText('> GABRIEL_SHADOW_CIRCUIT.log', textX, startY);
 
-  // Texto aparecendo linha por linha
-  var maxLines  = 5;
-  var lineH     = 16;
+  ctx.fillStyle = 'rgba(0,255,136,0.25)';
+  ctx.fillRect(textX, startY + 4, textW, 1);
+
+  // Linhas visíveis
+  var maxLines  = 10;
   var startLine = Math.max(0, INTRO.currentLine - maxLines + 1);
 
-  ctx.font = '11px "Courier New", monospace';
+  ctx.font = '13px "Courier New", monospace';
 
   for(var i = 0; i < maxLines; i++){
     var idx  = startLine + i;
     if(idx >= INTRO.lines.length) break;
 
     var text = INTRO.lines[idx];
-    // Linha atual — mostra só até o char atual
     if(idx === INTRO.currentLine){
       text = text.substring(0, INTRO.currentChar);
     }
 
-    // Cor por tipo de linha
+    if(text === '') continue;
+
+    // Cor por tipo
     if(text.indexOf('[') !== -1){
       ctx.fillStyle = '#FFD700';
+      ctx.font      = 'bold 13px "Courier New", monospace';
     } else if(text.indexOf('NEXCORP') !== -1 || text.indexOf('Guerra') !== -1 || text.indexOf('OPERAÇÃO') !== -1){
       ctx.fillStyle = '#FF5050';
+      ctx.font      = '13px "Courier New", monospace';
     } else if(text.indexOf('>') === 0){
       ctx.fillStyle = '#00FF88';
-    } else if(text === ''){
-      continue;
+      ctx.font      = '13px "Courier New", monospace';
     } else {
-      ctx.fillStyle = '#CCCCCC';
+      ctx.fillStyle = '#DDDDDD';
+      ctx.font      = '13px "Courier New", monospace';
     }
 
-    ctx.fillText(text, boxX + 10, boxY + 28 + i * lineH);
+    // Quebra linha se texto largo
+    if(ctx.measureText(text).width > textW - 10){
+      var words  = text.split(' ');
+      var line1  = '';
+      for(var w = 0; w < words.length; w++){
+        var test = line1 + words[w] + ' ';
+        if(ctx.measureText(test).width > textW - 10){
+          ctx.fillText(line1, textX, startY + 16 + i * lineH);
+          i++;
+          line1 = words[w] + ' ';
+        } else {
+          line1 = test;
+        }
+      }
+      ctx.fillText(line1, textX, startY + 16 + i * lineH);
+    } else {
+      ctx.fillText(text, textX, startY + 16 + i * lineH);
+    }
 
     // Cursor piscando
     if(idx === INTRO.currentLine && Math.floor(Date.now()/400)%2===0){
       var tw = ctx.measureText(text).width;
       ctx.fillStyle = '#00FF88';
-      ctx.fillRect(boxX + 10 + tw, boxY + 17 + i * lineH, 6, 12);
+      ctx.fillRect(textX + tw, startY + 4 + i * lineH, 7, 14);
     }
   }
 
   // Instrução pular
   if(Math.floor(Date.now()/700)%2===0){
     ctx.fillStyle = 'rgba(255,255,255,0.35)';
-    ctx.font      = '9px "Courier New", monospace';
+    ctx.font      = '10px "Courier New", monospace';
     ctx.textAlign = 'right';
-    ctx.fillText('ENTER / TOQUE para pular', W - 10, H - 2);
+    ctx.fillText('ENTER / TOQUE para pular', W - 10, H - 5);
     ctx.textAlign = 'left';
   }
 }
