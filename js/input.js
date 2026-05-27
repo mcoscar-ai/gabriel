@@ -1,5 +1,6 @@
 // ============================================================
 // input.js — Controles PC (teclado) e Mobile (cruz SNES)
+// Layout: esquerda = ◄ ▼ ►  |  direita = ▲ PULO + ● FOGO
 // ============================================================
 
 var INPUT = {
@@ -46,30 +47,47 @@ INPUT._updateKeyboard = function(){
 };
 
 // ============================================================
-// MOBILE — Cruz direcional estilo SNES
+// MOBILE — Botões digitais estilo SNES
+// Esquerda: ◄ ▼ ►   Direita: ▲ PULO + ● FOGO
 // ============================================================
 if(IS_MOBILE){
 
-  // Injeta estilo base dos botões
   var style = document.createElement('style');
   style.textContent =
     '.gbtn{' +
       'position:fixed;' +
-      'background:rgba(255,255,255,0.08);' +
-      'border:2px solid rgba(255,255,255,0.25);' +
-      'border-radius:8px;' +
+      'background:rgba(0,0,0,0.35);' +
+      'border:2px solid rgba(255,255,255,0.3);' +
+      'border-radius:10px;' +
       'display:flex;align-items:center;justify-content:center;' +
-      'color:rgba(255,255,255,0.6);' +
+      'color:rgba(255,255,255,0.7);font-weight:bold;' +
       'user-select:none;-webkit-user-select:none;' +
       'z-index:1000;touch-action:none;' +
-      'transition:background 0.05s;' +
+      'transition:background 0.05s, border-color 0.05s;' +
     '}' +
     '.gbtn.active{' +
-      'background:rgba(255,255,100,0.4);' +
-      'border-color:rgba(255,255,100,0.9);' +
+      'background:rgba(255,220,0,0.45);' +
+      'border-color:rgba(255,220,0,0.95);' +
+      'color:#fff;' +
     '}' +
-    '#btn-fire{border-radius:50%!important;background:rgba(220,50,50,0.15)!important;border-color:rgba(255,80,80,0.4)!important;}' +
-    '#btn-fire.active{background:rgba(255,80,80,0.55)!important;border-color:rgba(255,130,130,0.9)!important;}';
+    '#btn-fire{' +
+      'border-radius:50%!important;' +
+      'background:rgba(180,0,0,0.35)!important;' +
+      'border-color:rgba(255,60,60,0.5)!important;' +
+    '}' +
+    '#btn-fire.active{' +
+      'background:rgba(255,50,50,0.6)!important;' +
+      'border-color:rgba(255,120,120,0.95)!important;' +
+    '}' +
+    '#btn-jump{' +
+      'border-radius:50%!important;' +
+      'background:rgba(0,100,200,0.35)!important;' +
+      'border-color:rgba(60,160,255,0.5)!important;' +
+    '}' +
+    '#btn-jump.active{' +
+      'background:rgba(50,150,255,0.6)!important;' +
+      'border-color:rgba(120,200,255,0.95)!important;' +
+    '}';
   document.head.appendChild(style);
 
   function createBtn(id, label){
@@ -82,52 +100,59 @@ if(IS_MOBILE){
     return el;
   }
 
-  createBtn('btn-up',    '▲');
-  createBtn('btn-down',  '▼');
+  // Lado esquerdo — movimento
   createBtn('btn-left',  '◄');
   createBtn('btn-right', '►');
+  createBtn('btn-down',  '▼');
+
+  // Lado direito — ações
+  createBtn('btn-jump',  '▲');
   createBtn('btn-fire',  '●');
 
-  // Reposiciona botões baseado no tamanho ATUAL da tela
-  // Chamado na inicialização E a cada resize/rotação
+  // Reposiciona todos os botões baseado no tamanho atual da tela
   function layoutBtns(){
     var W = window.innerWidth;
     var H = window.innerHeight;
-    var S = Math.min(W, H) * 0.14; // tamanho do botão = 14% do menor lado
-    var M = S * 0.18;              // margem
-    var F = S * 1.15;              // botão de fogo maior
+    var S = Math.min(W, H) * 0.13; // tamanho base
+    var M = Math.min(W, H) * 0.03; // margem
+    var G = S * 0.15;              // gap entre botões
 
-    // Centro da cruz — canto inferior esquerdo
-    var CX = M + S;
-    var CY = H - M - S;
+    // ---- LADO ESQUERDO ----
+    // Centro da cruz de movimento
+    var LX = M + S;
+    var LY = H - M - S;
 
-    function pos(id, x, y, w, h){
-      var el = document.getElementById(id);
-      if(!el) return;
-      el.style.left   = x + 'px';
-      el.style.top    = y + 'px';
-      el.style.width  = w + 'px';
-      el.style.height = h + 'px';
-      el.style.fontSize = (w * 0.42) + 'px';
-    }
+    // ◄ esquerda
+    setPos('btn-left',  LX - S - G,      LY - S/2,    S, S);
+    // ► direita
+    setPos('btn-right', LX + S + G,      LY - S/2,    S, S);
+    // ▼ agachar (embaixo do centro)
+    setPos('btn-down',  LX - S/2,        LY + G,      S, S * 0.8);
 
-    // Cruz direcional
-    pos('btn-up',    CX - S/2,        CY - S*1.1,   S, S);
-    pos('btn-down',  CX - S/2,        CY + S*0.1,   S, S);
-    pos('btn-left',  CX - S*1.6,      CY - S/2,     S, S);
-    pos('btn-right', CX + S*0.6,      CY - S/2,     S, S);
+    // ---- LADO DIREITO ----
+    var ACT = S * 1.1; // botões de ação um pouco maiores
+    var RX  = W - M - ACT;
+    var RY  = H - M - ACT;
 
-    // Botão fogo — canto inferior direito
-    pos('btn-fire',  W - M - F,  H - M - F,  F, F);
+    // ● fogo — canto inferior direito
+    setPos('btn-fire', RX,           RY,           ACT, ACT);
+    // ▲ pulo — acima do botão de fogo
+    setPos('btn-jump', RX,           RY - ACT - G, ACT, ACT);
   }
 
-  // Posiciona na inicialização
-  layoutBtns();
+  function setPos(id, x, y, w, h){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.style.left     = Math.round(x) + 'px';
+    el.style.top      = Math.round(y) + 'px';
+    el.style.width    = Math.round(w) + 'px';
+    el.style.height   = Math.round(h) + 'px';
+    el.style.fontSize = Math.round(w * 0.4) + 'px';
+  }
 
-  // Reposiciona em qualquer mudança de tamanho ou rotação
-  window.addEventListener('resize',            layoutBtns);
+  layoutBtns();
+  window.addEventListener('resize', layoutBtns);
   window.addEventListener('orientationchange', function(){
-    // Aguarda 200ms para o browser terminar a rotação antes de recalcular
     setTimeout(layoutBtns, 200);
   });
 
@@ -156,12 +181,12 @@ if(IS_MOBILE){
 
   function pressBtn(id){
     if(!id) return;
-    if(id === 'btn-up'){
+    if(id === 'btn-jump'){
       if(!INPUT._jumpHeld){
         INPUT.jumpPressed = true;
         INPUT._jumpHeld   = true;
       }
-      setActive('btn-up', true);
+      setActive('btn-jump', true);
       return;
     }
     var field = BTN_MAP[id];
@@ -171,9 +196,9 @@ if(IS_MOBILE){
 
   function releaseBtn(id){
     if(!id) return;
-    if(id === 'btn-up'){
+    if(id === 'btn-jump'){
       INPUT._jumpHeld = false;
-      setActive('btn-up', false);
+      setActive('btn-jump', false);
       return;
     }
     var field = BTN_MAP[id];
