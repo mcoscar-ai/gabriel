@@ -86,7 +86,7 @@ function updatePlayer(){
   if(P.fireCool>0) P.fireCool--;
 
   if(INPUT.fire && P.fireCool===0 && !P.crouching){
-    fireBullet(); P.fireCool=15;
+    fireBullet(); P.fireCool=25;
   }
 
   if(P.crouching && P.onGround){ P.animFrame=4; }
