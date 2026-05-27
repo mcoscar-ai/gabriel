@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Gabriel: Shadow Circuit</title>
   <style>
     *{ margin:0; padding:0; box-sizing:border-box; }
     body{ background:#000; display:flex; align-items:center; justify-content:center; width:100vw; height:100vh; overflow:hidden; touch-action:none; }
@@ -18,6 +19,7 @@
 <script src="js/enemies.js"></script>
 <script src="js/hud.js"></script>
 <script src="js/screens.js"></script>
+<script src="js/game.js"></script>
 <script>
   var C = document.getElementById('c');
   var X = C.getContext('2d');
@@ -35,49 +37,10 @@
 
   loadAllAssets().then(function(){
     spawnEnemies();
+    spawnServers();
     function loop(){
       requestAnimationFrame(loop);
-
-      // Telas de intro/título/gameover/vitória
-      if(GAME_STATE !== 'playing'){
-        X.clearRect(0, 0, W, H);
-        drawScreen(X, W, H);
-        return;
-      }
-
-      // JOGO ATIVO
-      // Verifica game over
-      if(P.dead){
-        GAMEOVER.timer     = 0;
-        GAMEOVER.showRetry = false;
-        GAME_STATE         = 'gameover';
-        return;
-      }
-
-      // Render cenário
-      renderScene(X, W, H);
-
-      // Colisão balas do player com inimigos
-      for(var i = BULLETS.length-1; i>=0; i--){
-        var b = BULLETS[i];
-        for(var j = 0; j < ENEMIES.length; j++){
-          var e = ENEMIES[j];
-          if(e.state === STATE_DEAD) continue;
-          if(b.x+b.w > e.x && b.x < e.x+e.w &&
-             b.y+b.h > e.y && b.y < e.y+e.h){
-            hitEnemy(e);
-            BULLETS.splice(i,1);
-            break;
-          }
-        }
-      }
-
-      updatePlayer();
-      updateEnemies();
-      drawEnemies(X);
-      drawPlayer(X);
-      drawBullets(X);
-      drawHUD(X, W, H);
+      gameLoop(X, W, H);
     }
     loop();
   });
