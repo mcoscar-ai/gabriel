@@ -23,10 +23,10 @@ var ENEMY_TYPES = {
   light: {
     key:        'guard_light',
     hp:         2,
-    speed:      2.5,
-    detectRange:200,
-    attackRange:30,
-    damage:     1,
+    speed:      3.5,
+    detectRange:220,
+    attackRange:50,
+    damage:     2,
     score:      100,
     canShoot:   false,
     shootCool:  0,
@@ -186,7 +186,12 @@ function updateEnemies(){
       case STATE_CHASE:
         // Persegue o player
         e.dir = dx > 0 ? 1 : -1;
-        e.vx  = e.dir * e.speed * 1.3; // 30% mais rápido na perseguição
+        e.vx  = e.dir * e.speed * 1.3;
+
+        // Guard light salta em direção ao Gabriel quando está perto!
+        if(e.typeName === 'light' && dist < 180 && e.onGround){
+          e.vy = -10; // pulo
+        }
 
         // Animação bob mais rápido ao correr
         e.bobTick++;
