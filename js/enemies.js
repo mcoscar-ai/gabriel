@@ -32,7 +32,6 @@ var ENEMY_TYPES = {
     shootCool:  0,
     w:          40,
     h:          110,
-    flipDefault: false,
   },
   normal: {
     key:        'guard_normal',
@@ -46,7 +45,6 @@ var ENEMY_TYPES = {
     shootCool:  90,
     w:          44,
     h:          115,
-    flipDefault: false, // imagem corrigida
   },
   armored: {
     key:        'guard_armored',
@@ -60,7 +58,6 @@ var ENEMY_TYPES = {
     shootCool:  0,
     w:          50,
     h:          120,
-    flipDefault: false,
   },
 };
 
@@ -126,7 +123,7 @@ function spawnEnemies(){
       maxShootCool: type.shootCool,
       // FSM
       state:      STATE_PATROL,
-      dir:        -1,           // começa indo para esquerda
+      dir:        1,            // começa indo para direita
       spawnX:     def.x,        // ponto de spawn para patrulha
       patrolDist: 120,          // distância de patrulha do spawn
       // Visual
@@ -363,8 +360,7 @@ function drawEnemies(ctx){
       var dW  = Math.round(img.width * (dH / img.height));
       var bX  = sx + Math.round((e.w - dW) / 2);
       var bY  = Math.round(e.y + e.bobY) + (e.h - dH);
-      // flipDefault: imagem já virada para esquerda, inverte lógica
-      var flip = e.flipDefault ? (e.dir > 0) : (e.dir < 0);
+      var flip = (e.dir < 0);
       ctx.save();
       if(flip){
         ctx.translate(bX + dW, bY);
