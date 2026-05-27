@@ -3,8 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <style>
+    *{ margin:0; padding:0; box-sizing:border-box; }
+    body{ background:#000; display:flex; align-items:center; justify-content:center; width:100vw; height:100vh; overflow:hidden; touch-action:none; }
+    canvas{ display:block; image-rendering:pixelated; }
+  </style>
 </head>
-<body style="background:#000;margin:0">
+<body>
 <canvas id="c"></canvas>
 <script src="js/assets.js"></script>
 <script src="js/input.js"></script>
@@ -14,7 +19,17 @@
   var X = C.getContext('2d');
   var W = 800, H = 400;
   C.width = W; C.height = H;
-  C.style.width = W+'px'; C.style.height = H+'px';
+
+  function resize(){
+    var scaleX = window.innerWidth  / W;
+    var scaleY = window.innerHeight / H;
+    var scale  = Math.min(scaleX, scaleY);
+    C.style.width  = Math.floor(W * scale) + 'px';
+    C.style.height = Math.floor(H * scale) + 'px';
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', function(){ setTimeout(resize, 200); });
 
   loadAllAssets().then(function(){
     function loop(){
