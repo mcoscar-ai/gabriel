@@ -6,7 +6,7 @@
   <style>
     *{ margin:0; padding:0; box-sizing:border-box; }
     body{ background:#000; display:flex; align-items:center; justify-content:center; width:100vw; height:100vh; overflow:hidden; touch-action:none; }
-    canvas{ display:block; image-rendering:pixelated; }
+    canvas{ display:block; }
   </style>
 </head>
 <body>
@@ -20,27 +20,35 @@
   var X = C.getContext('2d');
   var W = 800, H = 400;
   C.width = W; C.height = H;
+
   function resize(){
-    var scaleX = window.innerWidth  / W;
-    var scaleY = window.innerHeight / H;
-    var scale  = Math.min(scaleX, scaleY);
+    var scale = Math.min(window.innerWidth/W, window.innerHeight/H);
     C.style.width  = Math.floor(W * scale) + 'px';
     C.style.height = Math.floor(H * scale) + 'px';
   }
   resize();
   window.addEventListener('resize', resize);
   window.addEventListener('orientationchange', function(){ setTimeout(resize, 200); });
+
   loadAllAssets().then(function(){
     function loop(){
       requestAnimationFrame(loop);
-      X.clearRect(0, 0, W, H);
-      drawScene(X);
+      renderScene(X, W, H);
       updatePlayer();
       drawPlayer(X);
       drawBullets(X);
+      // HUD simples
+      X.fillStyle = 'rgba(0,0,0,0.5)';
+      X.fillRect(0, 0, W, 24);
+      X.fillStyle = '#00FF88';
+      X.font = 'bold 12px monospace';
+      X.fillText('GABRIEL: SHADOW CIRCUIT', 8, 16);
       X.fillStyle = '#fff';
-      X.font = '14px monospace';
-      X.fillText('Vidas: ' + P.lives + '  Score: ' + P.score, 10, 20);
+      X.font = '12px monospace';
+      X.textAlign = 'right';
+      X.fillText(getZoneName(), W - 8, 16);
+      X.textAlign = 'left';
+      X.fillText('Vidas: ' + P.lives + '  Score: ' + P.score, 8, H - 8);
     }
     loop();
   });
