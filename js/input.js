@@ -1,6 +1,7 @@
 // ============================================================
-// input.js — Controles PC (teclado) e Mobile (cruz SNES)
-// Layout: esquerda = ◄ ▼ ►  |  direita = ▲ PULO + ● FOGO
+// input.js — Controles PC (teclado) e Mobile
+// Esquerda: ◄  ►  e ▼ embaixo entre eles
+// Direita: ▲ PULO (cima) + ● FOGO (baixo)
 // ============================================================
 
 var INPUT = {
@@ -47,8 +48,7 @@ INPUT._updateKeyboard = function(){
 };
 
 // ============================================================
-// MOBILE — Botões digitais estilo SNES
-// Esquerda: ◄ ▼ ►   Direita: ▲ PULO + ● FOGO
+// MOBILE
 // ============================================================
 if(IS_MOBILE){
 
@@ -81,7 +81,7 @@ if(IS_MOBILE){
     '}' +
     '#btn-jump{' +
       'border-radius:50%!important;' +
-      'background:rgba(0,100,200,0.35)!important;' +
+      'background:rgba(0,80,180,0.35)!important;' +
       'border-color:rgba(60,160,255,0.5)!important;' +
     '}' +
     '#btn-jump.active{' +
@@ -100,44 +100,39 @@ if(IS_MOBILE){
     return el;
   }
 
-  // Lado esquerdo — movimento
   createBtn('btn-left',  '◄');
   createBtn('btn-right', '►');
   createBtn('btn-down',  '▼');
-
-  // Lado direito — ações
   createBtn('btn-jump',  '▲');
   createBtn('btn-fire',  '●');
 
-  // Reposiciona todos os botões baseado no tamanho atual da tela
   function layoutBtns(){
     var W = window.innerWidth;
     var H = window.innerHeight;
-    var S = Math.min(W, H) * 0.13; // tamanho base
-    var M = Math.min(W, H) * 0.03; // margem
-    var G = S * 0.15;              // gap entre botões
+    var S = Math.min(W, H) * 0.14; // tamanho dos botões
+    var M = Math.min(W, H) * 0.04; // margem das bordas
+    var G = Math.min(W, H) * 0.02; // gap entre botões
 
     // ---- LADO ESQUERDO ----
-    // Centro da cruz de movimento
-    var LX = M + S;
-    var LY = H - M - S;
+    // ◄ e ► na mesma linha
+    var rowY  = H - M - S - S - G; // linha do ◄ ►
+    var downY = H - M - S;         // linha do ▼
 
-    // ◄ esquerda
-    setPos('btn-left',  LX - S - G,      LY - S/2,    S, S);
-    // ► direita
-    setPos('btn-right', LX + S + G,      LY - S/2,    S, S);
-    // ▼ agachar (embaixo do centro)
-    setPos('btn-down',  LX - S/2,        LY + G,      S, S * 0.8);
+    // ◄ — mais à esquerda
+    setPos('btn-left',  M,           rowY,  S, S);
+    // ► — ao lado do ◄
+    setPos('btn-right', M + S + G,   rowY,  S, S);
+    // ▼ — embaixo, centralizado entre ◄ e ►
+    setPos('btn-down',  M + S*0.25,  downY, S * 1.5, S * 0.75);
 
     // ---- LADO DIREITO ----
-    var ACT = S * 1.1; // botões de ação um pouco maiores
+    var ACT = S * 1.15;
     var RX  = W - M - ACT;
-    var RY  = H - M - ACT;
 
     // ● fogo — canto inferior direito
-    setPos('btn-fire', RX,           RY,           ACT, ACT);
-    // ▲ pulo — acima do botão de fogo
-    setPos('btn-jump', RX,           RY - ACT - G, ACT, ACT);
+    setPos('btn-fire', RX, H - M - ACT,         ACT, ACT);
+    // ▲ pulo — acima do fogo
+    setPos('btn-jump', RX, H - M - ACT*2 - G,   ACT, ACT);
   }
 
   function setPos(id, x, y, w, h){
@@ -147,7 +142,7 @@ if(IS_MOBILE){
     el.style.top      = Math.round(y) + 'px';
     el.style.width    = Math.round(w) + 'px';
     el.style.height   = Math.round(h) + 'px';
-    el.style.fontSize = Math.round(w * 0.4) + 'px';
+    el.style.fontSize = Math.round(Math.min(w,h) * 0.4) + 'px';
   }
 
   layoutBtns();
@@ -156,7 +151,6 @@ if(IS_MOBILE){
     setTimeout(layoutBtns, 200);
   });
 
-  // ---- Touch handlers ----
   function setActive(id, on){
     var el = document.getElementById(id);
     if(!el) return;
