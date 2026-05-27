@@ -31,7 +31,7 @@ function drawBackground(ctx) {
   else if (zone === 2) bgKey = 'bg2';
   else bgKey = 'bg3';
 
-  var img = ASSETS[bgKey];
+  var img = IMGS[bgKey];
 
   // Fallback: fundo sólido se imagem não carregou
   if (!img || !img.complete || img.naturalWidth === 0) {
