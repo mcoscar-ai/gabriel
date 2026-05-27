@@ -50,58 +50,26 @@ INPUT._updateKeyboard = function(){
 // ============================================================
 if(IS_MOBILE){
 
-  // Injeta CSS — força landscape e posiciona botões
+  // Injeta estilo base dos botões
   var style = document.createElement('style');
-  style.textContent = [
-    // Força landscape em dispositivos móveis
-    '@media screen and (orientation:portrait){',
-      'body::before{',
-        'content:"🔄 Vire o celular";',
-        'position:fixed;top:0;left:0;width:100%;height:100%;',
-        'background:#000;color:#fff;',
-        'display:flex;align-items:center;justify-content:center;',
-        'font-size:6vw;z-index:9999;',
-        'flex-direction:column;gap:20px;',
-      '}',
-    '}',
-    // Botões — só aparecem em landscape
-    '@media screen and (orientation:landscape){',
-      '.gbtn{',
-        'position:fixed;',
-        'width:11vmin;height:11vmin;',
-        'background:rgba(255,255,255,0.08);',
-        'border:2px solid rgba(255,255,255,0.25);',
-        'border-radius:8px;',
-        'display:flex;align-items:center;justify-content:center;',
-        'color:rgba(255,255,255,0.55);',
-        'font-size:5vmin;',
-        'user-select:none;-webkit-user-select:none;',
-        'z-index:1000;touch-action:none;',
-      '}',
-      '.gbtn.active{',
-        'background:rgba(255,255,100,0.35);',
-        'border-color:rgba(255,255,100,0.8);',
-      '}',
-      // Cruz — canto inferior esquerdo
-      '#btn-up   {left:13vmin; bottom:24vmin;}',
-      '#btn-down  {left:13vmin; bottom:2vmin;}',
-      '#btn-left  {left:1vmin;  bottom:13vmin;}',
-      '#btn-right {left:25vmin; bottom:13vmin;}',
-      // Fogo — canto inferior direito
-      '#btn-fire{',
-        'width:13vmin;height:13vmin;',
-        'right:3vmin;bottom:3vmin;',
-        'border-radius:50%;',
-        'font-size:6vmin;',
-        'background:rgba(255,50,50,0.15);',
-        'border-color:rgba(255,80,80,0.4);',
-      '}',
-      '#btn-fire.active{',
-        'background:rgba(255,80,80,0.5);',
-        'border-color:rgba(255,120,120,0.9);',
-      '}',
-    '}',
-  ].join('');
+  style.textContent =
+    '.gbtn{' +
+      'position:fixed;' +
+      'background:rgba(255,255,255,0.08);' +
+      'border:2px solid rgba(255,255,255,0.25);' +
+      'border-radius:8px;' +
+      'display:flex;align-items:center;justify-content:center;' +
+      'color:rgba(255,255,255,0.6);' +
+      'user-select:none;-webkit-user-select:none;' +
+      'z-index:1000;touch-action:none;' +
+      'transition:background 0.05s;' +
+    '}' +
+    '.gbtn.active{' +
+      'background:rgba(255,255,100,0.4);' +
+      'border-color:rgba(255,255,100,0.9);' +
+    '}' +
+    '#btn-fire{border-radius:50%!important;background:rgba(220,50,50,0.15)!important;border-color:rgba(255,80,80,0.4)!important;}' +
+    '#btn-fire.active{background:rgba(255,80,80,0.55)!important;border-color:rgba(255,130,130,0.9)!important;}';
   document.head.appendChild(style);
 
   function createBtn(id, label){
@@ -120,6 +88,50 @@ if(IS_MOBILE){
   createBtn('btn-right', '►');
   createBtn('btn-fire',  '●');
 
+  // Reposiciona botões baseado no tamanho ATUAL da tela
+  // Chamado na inicialização E a cada resize/rotação
+  function layoutBtns(){
+    var W = window.innerWidth;
+    var H = window.innerHeight;
+    var S = Math.min(W, H) * 0.14; // tamanho do botão = 14% do menor lado
+    var M = S * 0.18;              // margem
+    var F = S * 1.15;              // botão de fogo maior
+
+    // Centro da cruz — canto inferior esquerdo
+    var CX = M + S;
+    var CY = H - M - S;
+
+    function pos(id, x, y, w, h){
+      var el = document.getElementById(id);
+      if(!el) return;
+      el.style.left   = x + 'px';
+      el.style.top    = y + 'px';
+      el.style.width  = w + 'px';
+      el.style.height = h + 'px';
+      el.style.fontSize = (w * 0.42) + 'px';
+    }
+
+    // Cruz direcional
+    pos('btn-up',    CX - S/2,        CY - S*1.1,   S, S);
+    pos('btn-down',  CX - S/2,        CY + S*0.1,   S, S);
+    pos('btn-left',  CX - S*1.6,      CY - S/2,     S, S);
+    pos('btn-right', CX + S*0.6,      CY - S/2,     S, S);
+
+    // Botão fogo — canto inferior direito
+    pos('btn-fire',  W - M - F,  H - M - F,  F, F);
+  }
+
+  // Posiciona na inicialização
+  layoutBtns();
+
+  // Reposiciona em qualquer mudança de tamanho ou rotação
+  window.addEventListener('resize',            layoutBtns);
+  window.addEventListener('orientationchange', function(){
+    // Aguarda 200ms para o browser terminar a rotação antes de recalcular
+    setTimeout(layoutBtns, 200);
+  });
+
+  // ---- Touch handlers ----
   function setActive(id, on){
     var el = document.getElementById(id);
     if(!el) return;
