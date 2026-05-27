@@ -38,27 +38,36 @@ function drawBg(ctx, W, H){
   var bg = getZoneBg();
 
   if(!bg){
-    // Fallback se imagem não carregou
     var z = getZone();
-    if(z === 1) ctx.fillStyle = '#0a0a1a';
-    else if(z === 2) ctx.fillStyle = '#0a1a0a';
-    else ctx.fillStyle = '#1a0a0a';
+    ctx.fillStyle = z===1 ? '#0a0a1a' : z===2 ? '#0a1a0a' : '#1a0a0a';
     ctx.fillRect(0, 0, W, H);
     return;
   }
 
-  // Parallax: background move a 40% da velocidade da câmera
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+
+  // Escala a imagem para altura do canvas mantendo proporção
+  var scale  = H / bg.height;
+  var drawW  = Math.round(bg.width * scale);
+
+  // Parallax: 40% da velocidade da câmera
+  // Módulo garante loop perfeito sem gap
   var speed  = 0.4;
-  var bgW    = bg.width;   // usa largura real da imagem
-  var bgH    = bg.height;  // usa altura real da imagem
-  // Escala para altura do canvas mantendo proporção
-  var scale  = H / bgH;
-  var drawW  = Math.round(bgW * scale);
-  var offset = -(camX * speed % drawW);
+  var offset = -(camX * speed) % drawW;
   if(offset > 0) offset -= drawW;
-  // Desenha 2 cópias sem distorção
-  ctx.drawImage(bg, Math.round(offset),         0, drawW, H);
-  ctx.drawImage(bg, Math.round(offset + drawW), 0, drawW, H);
+
+  // Desenha cópias suficientes para cobrir toda a tela
+  var x = Math.round(offset);
+  while(x < W){
+    ctx.drawImage(bg, x, 0, drawW, H);
+    x += drawW;
+  }
+
+  // Overlay para atmosfera
+  ctx.fillStyle = 'rgba(0,0,10,0.25)';
+  ctx.fillRect(0, 0, W, H);
+}
 
   // Overlay escuro para dar atmosfera noturna
   ctx.fillStyle = 'rgba(0, 0, 10, 0.3)';
