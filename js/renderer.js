@@ -4,7 +4,7 @@
 // Requer: assets.js, player.js (camX, GROUND_Y, PLATFORMS)
 // ============================================================
 
-var BG_W = 1920; // largura do background
+var BG_W = 1774; // largura real dos backgrounds
 
 // Retorna zona atual: 1, 2 ou 3
 function getZone(){
@@ -49,14 +49,16 @@ function drawBg(ctx, W, H){
 
   // Parallax: background move a 40% da velocidade da câmera
   var speed  = 0.4;
-  var offset = -(camX * speed % BG_W);
-
-  // Garante que offset seja negativo e dentro de um ciclo
-  if(offset > 0) offset -= BG_W;
-
-  // Desenha 2 cópias para cobrir toda a tela sem gaps
-  ctx.drawImage(bg, Math.round(offset),        0, BG_W, H);
-  ctx.drawImage(bg, Math.round(offset + BG_W), 0, BG_W, H);
+  var bgW    = bg.width;   // usa largura real da imagem
+  var bgH    = bg.height;  // usa altura real da imagem
+  // Escala para altura do canvas mantendo proporção
+  var scale  = H / bgH;
+  var drawW  = Math.round(bgW * scale);
+  var offset = -(camX * speed % drawW);
+  if(offset > 0) offset -= drawW;
+  // Desenha 2 cópias sem distorção
+  ctx.drawImage(bg, Math.round(offset),         0, drawW, H);
+  ctx.drawImage(bg, Math.round(offset + drawW), 0, drawW, H);
 
   // Overlay escuro para dar atmosfera noturna
   ctx.fillStyle = 'rgba(0, 0, 10, 0.3)';
