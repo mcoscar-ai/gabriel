@@ -15,6 +15,7 @@
 <script src="js/input.js"></script>
 <script src="js/player.js"></script>
 <script src="js/renderer.js"></script>
+<script src="js/enemies.js"></script>
 <script>
   var C = document.getElementById('c');
   var X = C.getContext('2d');
@@ -31,24 +32,43 @@
   window.addEventListener('orientationchange', function(){ setTimeout(resize, 200); });
 
   loadAllAssets().then(function(){
+    spawnEnemies();
     function loop(){
       requestAnimationFrame(loop);
+      // Render
       renderScene(X, W, H);
+      // Colisão balas do player com inimigos
+      for(var i = BULLETS.length-1; i>=0; i--){
+        var b = BULLETS[i];
+        for(var j = 0; j < ENEMIES.length; j++){
+          var e = ENEMIES[j];
+          if(e.state === STATE_DEAD) continue;
+          if(b.x+b.w > e.x && b.x < e.x+e.w &&
+             b.y+b.h > e.y && b.y < e.y+e.h){
+            hitEnemy(e);
+            BULLETS.splice(i,1);
+            break;
+          }
+        }
+      }
       updatePlayer();
+      updateEnemies();
+      drawEnemies(X);
       drawPlayer(X);
       drawBullets(X);
-      // HUD simples
-      X.fillStyle = 'rgba(0,0,0,0.5)';
+      // HUD
+      X.fillStyle = 'rgba(0,0,0,0.55)';
       X.fillRect(0, 0, W, 24);
       X.fillStyle = '#00FF88';
       X.font = 'bold 12px monospace';
       X.fillText('GABRIEL: SHADOW CIRCUIT', 8, 16);
-      X.fillStyle = '#fff';
+      X.fillStyle = '#aaa';
       X.font = '12px monospace';
       X.textAlign = 'right';
-      X.fillText(getZoneName(), W - 8, 16);
+      X.fillText(getZoneName(), W-8, 16);
       X.textAlign = 'left';
-      X.fillText('Vidas: ' + P.lives + '  Score: ' + P.score, 8, H - 8);
+      X.fillStyle = '#fff';
+      X.fillText('Vidas: '+P.lives+'  Score: '+P.score, 8, H-8);
     }
     loop();
   });
