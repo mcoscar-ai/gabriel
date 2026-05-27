@@ -3,20 +3,23 @@
 <head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 </head>
-<body style="background:#000;margin:0">
+<body style="background:#111;margin:0">
 <script src="js/assets.js"></script>
 <script src="js/input.js"></script>
 <script>
-  loadAllAssets().then(function(){
-    console.log('Assets OK');
-    setInterval(function(){
-      if(INPUT.left)  console.log('← esquerda');
-      if(INPUT.right) console.log('→ direita');
-      if(INPUT.down)  console.log('↓ agachar');
-      if(INPUT.fire)  console.log('● atirar');
-      if(INPUT.jumpPressed){ console.log('▲ PULO!'); INPUT.clearJump(); }
-    }, 100);
-  });
+  window.onload = function(){
+    loadAllAssets().then(function(){
+      console.log('Assets OK - Total:', Object.keys(IMGS).length);
+      setInterval(function(){
+        INPUT._updateKeyboard();
+        if(INPUT.left)  console.log('← esquerda');
+        if(INPUT.right) console.log('→ direita');
+        if(INPUT.down)  console.log('↓ agachar');
+        if(INPUT.fire)  console.log('● atirar');
+        if(INPUT.jumpPressed){ console.log('▲ PULO!'); INPUT.clearJump(); }
+      }, 100);
+    });
+  };
 </script>
 </body>
 </html>
