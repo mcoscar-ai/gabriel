@@ -76,6 +76,10 @@ function drawIntro(ctx, W, H){
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, W, H);
 
+  // Alta qualidade de imagem
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+
   // LADO DIREITO — imagem do Gabriel completa
   var bg = IMGS['screen_room'];
   if(bg){
@@ -121,7 +125,7 @@ function drawIntro(ctx, W, H){
   ctx.fillRect(textX, startY + 4, textW, 1);
 
   // Só mostra linhas que já foram digitadas (idx <= currentLine)
-  ctx.font = '14px "Courier New", monospace';
+  ctx.font = '17px "Courier New", monospace';
   var visibleCount = 0;
   var renderStart  = Math.max(0, INTRO.currentLine - maxLines + 1);
 
@@ -140,16 +144,16 @@ function drawIntro(ctx, W, H){
     // Cor por tipo
     if(text.indexOf('[') !== -1){
       ctx.fillStyle = '#CC6600';
-      ctx.font      = 'bold 14px "Courier New", monospace';
+      ctx.font      = 'bold 17px "Courier New", monospace';
     } else if(text.indexOf('NEXCORP') !== -1 || text.indexOf('Guerra') !== -1 || text.indexOf('OPERAÇÃO') !== -1){
       ctx.fillStyle = '#CC0000';
-      ctx.font      = 'bold 14px "Courier New", monospace';
+      ctx.font      = 'bold 17px "Courier New", monospace';
     } else if(text.indexOf('>') === 0){
       ctx.fillStyle = '#007744';
-      ctx.font      = '14px "Courier New", monospace';
+      ctx.font      = '17px "Courier New", monospace';
     } else {
       ctx.fillStyle = '#111111';
-      ctx.font      = '14px "Courier New", monospace';
+      ctx.font      = '17px "Courier New", monospace';
     }
 
     var y = startY + 20 + visibleCount * lineH;
@@ -184,12 +188,18 @@ function drawIntro(ctx, W, H){
     visibleCount++;
   }
 
-  // Instrução pular
-  if(Math.floor(Date.now()/700)%2===0){
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.font      = '11px "Courier New", monospace';
+  // Instrução — só mostra TOQUE para continuar quando texto termina
+  if(INTRO.done && Math.floor(Date.now()/600)%2===0){
+    ctx.fillStyle = '#007744';
+    ctx.font      = 'bold 12px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('▶  TOQUE OU ENTER PARA CONTINUAR  ◀', W * 0.26, H - 8);
+    ctx.textAlign = 'left';
+  } else if(!INTRO.done){
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.font      = '10px "Courier New", monospace';
     ctx.textAlign = 'right';
-    ctx.fillText('ENTER / TOQUE para pular', W - 10, H - 5);
+    ctx.fillText('ENTER para pular', W - 10, H - 5);
     ctx.textAlign = 'left';
   }
 }
@@ -390,7 +400,7 @@ function initGame(){
 // INPUT DAS TELAS
 // ============================================================
 window.addEventListener('keydown', function(e){
-  if(e.code === 'Enter' || e.code === 'Space') handleScreenInput();
+  if(e.code === 'Enter' || e.code === 'Space') handleScreenInput(false);
 });
 
 document.addEventListener('touchstart', function(e){
@@ -399,17 +409,19 @@ document.addEventListener('touchstart', function(e){
     e.changedTouches[0].clientY
   );
   if(el && el.getAttribute('data-btn')) return;
-  handleScreenInput();
+  handleScreenInput(true);
 }, { passive: true });
 
-function handleScreenInput(){
+function handleScreenInput(isTouch){
   if(GAME_STATE === 'intro'){
     if(!INTRO.done){
-      // Pula direto para o fim
-      INTRO.currentLine = INTRO.lines.length - 1;
-      INTRO.currentChar = INTRO.lines[INTRO.currentLine].length;
-      INTRO.done = true;
-      INTRO.lineTimer = 0;
+      if(!isTouch){
+        // Teclado pula — toque NÃO pula durante digitação
+        INTRO.currentLine = INTRO.lines.length - 1;
+        INTRO.currentChar = INTRO.lines[INTRO.currentLine].length;
+        INTRO.done = true;
+        INTRO.lineTimer = 0;
+      }
     } else {
       TITLE.alpha = 0;
       GAME_STATE = 'title';
