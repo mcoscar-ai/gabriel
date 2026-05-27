@@ -49,8 +49,8 @@ function updateIntro(){
 
   INTRO.charTimer++;
 
-  // 1 letra a cada 3 frames = ~40 palavras por minuto (padrão da indústria)
-  if(INTRO.charTimer >= 3){
+  // 1 letra a cada 2 frames = mais rápido
+  if(INTRO.charTimer >= 2){
     INTRO.charTimer = 0;
     var line = INTRO.lines[INTRO.currentLine];
 
@@ -95,22 +95,29 @@ function drawIntro(ctx, W, H){
     ctx.fillRect(dx - 40, 0, 120, H);
   }
 
-  // Linha divisória neon
-  ctx.fillStyle = 'rgba(0,255,136,0.25)';
-  ctx.fillRect(Math.round(W * 0.52), 15, 1, H - 30);
-
-  // LADO ESQUERDO — texto
+  // LADO ESQUERDO — fundo claro atrás do texto
   var textX  = 16;
   var textW  = Math.round(W * 0.50);
   var lineH  = 24;
   var startY = 28;
   var maxLines = 13;
 
+  // Fundo branco semitransparente atrás do texto
+  ctx.fillStyle = 'rgba(255,255,255,0.88)';
+  ctx.fillRect(0, 0, textW + 20, H);
+
+  // Borda direita suave
+  var gradText = ctx.createLinearGradient(textW, 0, textW + 40, 0);
+  gradText.addColorStop(0, 'rgba(255,255,255,0.88)');
+  gradText.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = gradText;
+  ctx.fillRect(textW, 0, 40, H);
+
   // Header
-  ctx.fillStyle = '#00FF88';
+  ctx.fillStyle = '#007744';
   ctx.font      = 'bold 11px "Courier New", monospace';
   ctx.fillText('> GABRIEL_SHADOW_CIRCUIT.log', textX, startY);
-  ctx.fillStyle = 'rgba(0,255,136,0.2)';
+  ctx.fillStyle = 'rgba(0,180,80,0.4)';
   ctx.fillRect(textX, startY + 4, textW, 1);
 
   // Só mostra linhas que já foram digitadas (idx <= currentLine)
@@ -132,16 +139,16 @@ function drawIntro(ctx, W, H){
 
     // Cor por tipo
     if(text.indexOf('[') !== -1){
-      ctx.fillStyle = '#FFD700';
+      ctx.fillStyle = '#CC6600';
       ctx.font      = 'bold 14px "Courier New", monospace';
     } else if(text.indexOf('NEXCORP') !== -1 || text.indexOf('Guerra') !== -1 || text.indexOf('OPERAÇÃO') !== -1){
-      ctx.fillStyle = '#FF6060';
-      ctx.font      = '14px "Courier New", monospace';
+      ctx.fillStyle = '#CC0000';
+      ctx.font      = 'bold 14px "Courier New", monospace';
     } else if(text.indexOf('>') === 0){
-      ctx.fillStyle = '#00FF88';
+      ctx.fillStyle = '#007744';
       ctx.font      = '14px "Courier New", monospace';
     } else {
-      ctx.fillStyle = '#FFFFFF';
+      ctx.fillStyle = '#111111';
       ctx.font      = '14px "Courier New", monospace';
     }
 
@@ -170,7 +177,7 @@ function drawIntro(ctx, W, H){
     // Cursor piscando na linha atual
     if(idx === INTRO.currentLine && Math.floor(Date.now()/400)%2===0){
       var tw = ctx.measureText(text).width;
-      ctx.fillStyle = '#00FF88';
+      ctx.fillStyle = '#007744';
       ctx.fillRect(textX + tw + 2, y - 13, 8, 15);
     }
 
@@ -179,7 +186,7 @@ function drawIntro(ctx, W, H){
 
   // Instrução pular
   if(Math.floor(Date.now()/700)%2===0){
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.font      = '11px "Courier New", monospace';
     ctx.textAlign = 'right';
     ctx.fillText('ENTER / TOQUE para pular', W - 10, H - 5);
