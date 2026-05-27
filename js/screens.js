@@ -42,6 +42,7 @@ var INTRO = {
   charTimer:   0,
   lineTimer:   0,
   done:        false,
+  doneTimer:   0,  // delay após terminar antes de aceitar toque
 };
 
 function updateIntro(){
@@ -65,6 +66,7 @@ function updateIntro(){
         INTRO.currentChar = 0;
         if(INTRO.currentLine >= INTRO.lines.length){
           INTRO.done = true;
+          INTRO.doneTimer = 0;
         }
       }
     }
@@ -389,7 +391,7 @@ function initGame(){
   HUD.lastScore = 0; HUD.scoreFlash = 0;
   HUD.zoneMsg = ''; HUD.zoneMsgTimer = 0; HUD.lastZone = 0;
   INTRO.currentLine = 0; INTRO.currentChar = 0;
-  INTRO.charTimer = 0; INTRO.lineTimer = 0; INTRO.done = false;
+  INTRO.charTimer = 0; INTRO.lineTimer = 0; INTRO.done = false; INTRO.doneTimer = 0;
   TITLE.alpha = 0; TITLE.glitchTimer = 0;
   GAMEOVER.timer = 0; GAMEOVER.showRetry = false;
   WIN.timer = 0; WIN.alpha = 0;
@@ -416,13 +418,12 @@ function handleScreenInput(isTouch){
   if(GAME_STATE === 'intro'){
     if(!INTRO.done){
       if(!isTouch){
-        // Teclado pula — toque NÃO pula durante digitação
         INTRO.currentLine = INTRO.lines.length - 1;
         INTRO.currentChar = INTRO.lines[INTRO.currentLine].length;
         INTRO.done = true;
-        INTRO.lineTimer = 0;
+        INTRO.doneTimer = 0;
       }
-    } else {
+    } else if(INTRO.doneTimer > 60){ // aguarda 1 segundo antes de aceitar toque
       TITLE.alpha = 0;
       GAME_STATE = 'title';
     }
@@ -443,6 +444,7 @@ function drawScreen(ctx, W, H){
     updateIntro();
     drawIntro(ctx, W, H);
     if(INTRO.done){
+      INTRO.doneTimer++;
       INTRO.lineTimer++;
       if(INTRO.lineTimer > 90){
         TITLE.alpha = 0;
