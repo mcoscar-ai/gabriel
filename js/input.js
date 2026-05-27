@@ -46,52 +46,64 @@ INPUT._updateKeyboard = function(){
 };
 
 // ============================================================
-// MOBILE — Cruz direcional estilo SNES (CSS % — funciona em
-// qualquer orientação e tamanho de tela)
+// MOBILE — Cruz direcional estilo SNES
 // ============================================================
 if(IS_MOBILE){
 
-  // Injeta CSS dos botões — tudo em % e vw/vh
+  // Injeta CSS — força landscape e posiciona botões
   var style = document.createElement('style');
   style.textContent = [
-    '.gbtn{',
-      'position:fixed;',
-      'width:12vmin;height:12vmin;',
-      'background:rgba(255,255,255,0.08);',
-      'border:2px solid rgba(255,255,255,0.25);',
-      'border-radius:8px;',
-      'display:flex;align-items:center;justify-content:center;',
-      'color:rgba(255,255,255,0.55);',
-      'font-size:5vmin;',
-      'user-select:none;-webkit-user-select:none;',
-      'z-index:1000;touch-action:none;',
+    // Força landscape em dispositivos móveis
+    '@media screen and (orientation:portrait){',
+      'body::before{',
+        'content:"🔄 Vire o celular";',
+        'position:fixed;top:0;left:0;width:100%;height:100%;',
+        'background:#000;color:#fff;',
+        'display:flex;align-items:center;justify-content:center;',
+        'font-size:6vw;z-index:9999;',
+        'flex-direction:column;gap:20px;',
+      '}',
     '}',
-    '.gbtn.active{',
-      'background:rgba(255,255,100,0.35);',
-      'border-color:rgba(255,255,100,0.8);',
-    '}',
-    // Cruz — posicionada no canto inferior esquerdo
-    '#btn-up   {left:14vmin; bottom:26vmin;}',
-    '#btn-down  {left:14vmin; bottom:2vmin;}',
-    '#btn-left  {left:1vmin;  bottom:14vmin;}',
-    '#btn-right {left:27vmin; bottom:14vmin;}',
-    // Botão de fogo — canto inferior direito
-    '#btn-fire{',
-      'width:14vmin;height:14vmin;',
-      'right:3vmin;bottom:3vmin;',
-      'border-radius:50%;',
-      'font-size:6vmin;',
-      'background:rgba(255,50,50,0.15);',
-      'border-color:rgba(255,80,80,0.4);',
-    '}',
-    '#btn-fire.active{',
-      'background:rgba(255,80,80,0.5);',
-      'border-color:rgba(255,120,120,0.9);',
+    // Botões — só aparecem em landscape
+    '@media screen and (orientation:landscape){',
+      '.gbtn{',
+        'position:fixed;',
+        'width:11vmin;height:11vmin;',
+        'background:rgba(255,255,255,0.08);',
+        'border:2px solid rgba(255,255,255,0.25);',
+        'border-radius:8px;',
+        'display:flex;align-items:center;justify-content:center;',
+        'color:rgba(255,255,255,0.55);',
+        'font-size:5vmin;',
+        'user-select:none;-webkit-user-select:none;',
+        'z-index:1000;touch-action:none;',
+      '}',
+      '.gbtn.active{',
+        'background:rgba(255,255,100,0.35);',
+        'border-color:rgba(255,255,100,0.8);',
+      '}',
+      // Cruz — canto inferior esquerdo
+      '#btn-up   {left:13vmin; bottom:24vmin;}',
+      '#btn-down  {left:13vmin; bottom:2vmin;}',
+      '#btn-left  {left:1vmin;  bottom:13vmin;}',
+      '#btn-right {left:25vmin; bottom:13vmin;}',
+      // Fogo — canto inferior direito
+      '#btn-fire{',
+        'width:13vmin;height:13vmin;',
+        'right:3vmin;bottom:3vmin;',
+        'border-radius:50%;',
+        'font-size:6vmin;',
+        'background:rgba(255,50,50,0.15);',
+        'border-color:rgba(255,80,80,0.4);',
+      '}',
+      '#btn-fire.active{',
+        'background:rgba(255,80,80,0.5);',
+        'border-color:rgba(255,120,120,0.9);',
+      '}',
     '}',
   ].join('');
   document.head.appendChild(style);
 
-  // Cria botão
   function createBtn(id, label){
     var el = document.createElement('div');
     el.id  = id;
