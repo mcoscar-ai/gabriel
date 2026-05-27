@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body>
+<script src="js/assets.js"></script>
+<script>
+  loadAllAssets().then(function(){
+    console.log('Total carregado:', Object.keys(IMGS).length);
+    Object.keys(IMGS).forEach(function(k){ console.log('✅', k); });
+  });
+</script>
+</body>
+</html>
