@@ -1,196 +1,193 @@
 // ============================================================
-// renderer.js — Gabriel: Shadow Circuit
-// Responsável por: background parallax, chão, plataformas
-// Depende de globais: camX, W, H, GROUND_Y, BG_W, GW, PLATFORMS, ASSETS
+// renderer.js — Desenha backgrounds, chão e plataformas
+// Técnica: parallax com 2x drawImage para scroll infinito
+// Requer: assets.js, player.js (camX, GROUND_Y, PLATFORMS)
 // ============================================================
 
-// ------------------------------------------------------------
-// getZone()
-// Retorna a zona atual (1, 2 ou 3) baseado em camX
-// Zona 1: x 0–1333  | Zona 2: x 1333–2666 | Zona 3: x 2666+
-// ------------------------------------------------------------
-function getZone() {
-  if (camX < 1333) return 1;
-  if (camX < 2666) return 2;
+var BG_W = 1920; // largura do background
+
+// Retorna zona atual: 1, 2 ou 3
+function getZone(){
+  if(camX < GW * 0.33) return 1;
+  if(camX < GW * 0.66) return 2;
   return 3;
 }
 
-// ------------------------------------------------------------
-// drawBackground(ctx)
-// Parallax: bg move mais devagar que o mundo
-// scrollFactor = BG_W / GW = 1920/4000 = 0.48
-// Isso garante que o bg termina exatamente quando o mundo termina
-// Técnica: modulo wrapping + desenho duplo para cobrir emenda
-// ------------------------------------------------------------
-function drawBackground(ctx) {
-  var zone = getZone();
+// Retorna nome da zona atual
+function getZoneName(){
+  var z = getZone();
+  if(z === 1) return 'ZONA 1 — Beto Carrero';
+  if(z === 2) return 'ZONA 2 — Laboratório';
+  return 'ZONA 3 — Datacenter NEXCORP';
+}
 
-  // Seleciona imagem do bg conforme zona
-  var bgKey;
-  if (zone === 1) bgKey = 'bg1';
-  else if (zone === 2) bgKey = 'bg2';
-  else bgKey = 'bg3';
+// Retorna imagem de background da zona atual
+function getZoneBg(){
+  var z = getZone();
+  if(z === 1) return IMGS['bg1'];
+  if(z === 2) return IMGS['bg2'];
+  return IMGS['bg3'];
+}
 
-  var img = IMGS[bgKey];
+// ============================================================
+// BACKGROUND COM PARALLAX
+// Técnica: offset = -(camX * speed % BG_W)
+// Desenha 2x a imagem para cobrir toda a tela sem gaps
+// ============================================================
+function drawBg(ctx, W, H){
+  var bg = getZoneBg();
 
-  // Fallback: fundo sólido se imagem não carregou
-  if (!img || !img.complete || img.naturalWidth === 0) {
-    var colors = { 1: '#0a1a2e', 2: '#0d1f1a', 3: '#1a0d1f' };
-    ctx.fillStyle = colors[zone] || '#0a1a2e';
+  if(!bg){
+    // Fallback se imagem não carregou
+    var z = getZone();
+    if(z === 1) ctx.fillStyle = '#0a0a1a';
+    else if(z === 2) ctx.fillStyle = '#0a1a0a';
+    else ctx.fillStyle = '#1a0a0a';
     ctx.fillRect(0, 0, W, H);
     return;
   }
 
-  // scrollFactor: bg termina junto com o mundo
-  var scrollFactor = BG_W / GW; // 0.48
+  // Parallax: background move a 40% da velocidade da câmera
+  var speed  = 0.4;
+  var offset = -(camX * speed % BG_W);
 
-  // Offset do bg no espaço de mundo
-  var offsetX = camX * scrollFactor;
+  // Garante que offset seja negativo e dentro de um ciclo
+  if(offset > 0) offset -= BG_W;
 
-  // Modulo wrapping para tiling contínuo
-  var imgW = img.naturalWidth || BG_W;
-  var wrappedX = ((offsetX % imgW) + imgW) % imgW;
+  // Desenha 2 cópias para cobrir toda a tela sem gaps
+  ctx.drawImage(bg, Math.round(offset),        0, BG_W, H);
+  ctx.drawImage(bg, Math.round(offset + BG_W), 0, BG_W, H);
 
-  // Escala do bg para cobrir a altura do canvas
-  var scale = H / (img.naturalHeight || H);
-  var drawW = imgW * scale;
-  var drawH = H;
-
-  // Desenha duas vezes para cobrir a emenda (parallax tiling)
-  ctx.drawImage(img, -wrappedX * scale, 0, drawW, drawH);
-  ctx.drawImage(img, drawW - wrappedX * scale, 0, drawW, drawH);
-
-  // Overlay escuro sutil para profundidade — varia por zona
-  var overlayAlpha = { 1: 0.10, 2: 0.18, 3: 0.22 };
-  ctx.fillStyle = 'rgba(0,0,0,' + overlayAlpha[zone] + ')';
+  // Overlay escuro para dar atmosfera noturna
+  ctx.fillStyle = 'rgba(0, 0, 10, 0.3)';
   ctx.fillRect(0, 0, W, H);
 }
 
-// ------------------------------------------------------------
-// drawGround(ctx)
-// Faixa do chão de GROUND_Y até H
-// Visual muda por zona: asfalto, laboratório, datacenter
-// ------------------------------------------------------------
-function drawGround(ctx) {
-  var zone = getZone();
+// ============================================================
+// TRANSIÇÃO DE ZONA — fade suave ao mudar de background
+// ============================================================
+var _lastZone   = 1;
+var _zoneFade   = 0;  // 0 = sem fade, >0 = fadando
 
-  // Paleta por zona
-  var groundColors = {
-    1: { fill: '#1a1208', border: '#c8a020', glow: 'rgba(200,160,32,0.25)' },   // Beto Carrero — terra noturna
-    2: { fill: '#0d1f14', border: '#00ff88', glow: 'rgba(0,255,136,0.20)' },    // Laboratório — verde neon
-    3: { fill: '#0d0d1f', border: '#00aaff', glow: 'rgba(0,170,255,0.22)' }     // Datacenter — azul cibernético
-  };
-
-  var c = groundColors[zone];
-
-  // Glow difuso acima do chão
-  var glowGrad = ctx.createLinearGradient(0, GROUND_Y - 12, 0, GROUND_Y + 8);
-  glowGrad.addColorStop(0, c.glow);
-  glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = glowGrad;
-  ctx.fillRect(0, GROUND_Y - 12, W, 20);
-
-  // Faixa principal do chão
-  ctx.fillStyle = c.fill;
-  ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
-
-  // Linha de borda luminosa no topo do chão
-  ctx.strokeStyle = c.border;
-  ctx.lineWidth = 2;
-  ctx.shadowColor = c.border;
-  ctx.shadowBlur = 6;
-  ctx.beginPath();
-  ctx.moveTo(0, GROUND_Y);
-  ctx.lineTo(W, GROUND_Y);
-  ctx.stroke();
-
-  // Segunda linha mais fina para reforço visual
-  ctx.strokeStyle = c.border;
-  ctx.lineWidth = 1;
-  ctx.globalAlpha = 0.4;
-  ctx.beginPath();
-  ctx.moveTo(0, GROUND_Y + 4);
-  ctx.lineTo(W, GROUND_Y + 4);
-  ctx.stroke();
-  ctx.globalAlpha = 1.0;
-
-  // Reset shadow
-  ctx.shadowBlur = 0;
-  ctx.shadowColor = 'transparent';
+function drawZoneTransition(ctx, W, H){
+  var currentZone = getZone();
+  if(currentZone !== _lastZone){
+    _lastZone = currentZone;
+    _zoneFade = 30; // 30 frames de fade
+  }
+  if(_zoneFade > 0){
+    ctx.fillStyle = 'rgba(0,0,0,' + (_zoneFade / 30 * 0.6) + ')';
+    ctx.fillRect(0, 0, W, H);
+    _zoneFade--;
+  }
 }
 
-// ------------------------------------------------------------
-// drawPlatforms(ctx)
-// Itera PLATFORMS, desenha apenas as visíveis na câmera
-// Estilo cyberpunk/neon com gradiente + borda brilhante
-// ------------------------------------------------------------
-function drawPlatforms(ctx) {
-  var zone = getZone();
+// ============================================================
+// CHÃO
+// ============================================================
+function drawGround(ctx, W, H){
+  // Base do chão
+  ctx.fillStyle = '#0d0d14';
+  ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
 
-  // Cor da plataforma por zona
-  var platColors = {
-    1: { top: '#c8a020', fill1: '#3d2e08', fill2: '#1a1208', shadow: 'rgba(200,160,32,0.5)' },
-    2: { top: '#00ff88', fill1: '#083d20', fill2: '#041a10', shadow: 'rgba(0,255,136,0.45)' },
-    3: { top: '#00aaff', fill1: '#082040', fill2: '#040d1a', shadow: 'rgba(0,170,255,0.45)' }
-  };
+  // Linha neon no topo do chão — cor muda por zona
+  var z = getZone();
+  var lineColor = z === 1 ? 'rgba(0,255,136,0.8)'
+                : z === 2 ? 'rgba(0,200,255,0.8)'
+                : 'rgba(255,80,80,0.8)';
 
-  var c = platColors[zone];
+  ctx.fillStyle = lineColor;
+  ctx.fillRect(0, GROUND_Y, W, 2);
 
-  for (var i = 0; i < PLATFORMS.length; i++) {
-    var p = PLATFORMS[i];
+  // Glow sob a linha
+  ctx.fillStyle = lineColor.replace('0.8', '0.15');
+  ctx.fillRect(0, GROUND_Y + 2, W, 6);
 
-    // Converte coordenadas de mundo para tela
-    var sx = p.x - camX;
-    var sy = p.y;
+  // Grade sutil no chão — dá sensação de movimento
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 1;
 
-    // Culling: ignora plataformas fora da tela (margem de 20px)
-    if (sx + p.w < -20 || sx > W + 20) continue;
-
-    // Gradiente vertical da plataforma
-    var grad = ctx.createLinearGradient(sx, sy, sx, sy + p.h);
-    grad.addColorStop(0, c.fill1);
-    grad.addColorStop(1, c.fill2);
-    ctx.fillStyle = grad;
-    ctx.fillRect(sx, sy, p.w, p.h);
-
-    // Borda lateral e inferior discreta
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(sx, sy, p.w, p.h);
-
-    // Linha de topo luminosa (principal — onde o player pisa)
-    ctx.shadowColor = c.shadow;
-    ctx.shadowBlur = 8;
-    ctx.strokeStyle = c.top;
-    ctx.lineWidth = 2;
+  // Linhas horizontais
+  for(var y = GROUND_Y + 16; y < H; y += 18){
     ctx.beginPath();
-    ctx.moveTo(sx, sy + 1);
-    ctx.lineTo(sx + p.w, sy + 1);
-    ctx.stroke();
-
-    // Reflexo interno sutil (linha branca fina abaixo do topo)
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(sx + 2, sy + 4);
-    ctx.lineTo(sx + p.w - 2, sy + 4);
+    ctx.moveTo(0, y);
+    ctx.lineTo(W, y);
     ctx.stroke();
   }
 
-  // Reset shadow
-  ctx.shadowBlur = 0;
-  ctx.shadowColor = 'transparent';
+  // Linhas verticais — se movem com a câmera
+  var vStep = 55;
+  var vOff  = -(camX % vStep);
+  for(var x = vOff; x < W + vStep; x += vStep){
+    ctx.beginPath();
+    ctx.moveTo(Math.round(x), GROUND_Y + 2);
+    ctx.lineTo(Math.round(x), H);
+    ctx.stroke();
+  }
 }
 
-// ------------------------------------------------------------
-// drawScene(ctx)
-// Função principal — chama tudo na ordem correta
-// Chamada pelo game loop a cada frame ANTES de desenhar
-// player, inimigos e HUD
-// ------------------------------------------------------------
-function drawScene(ctx) {
-  drawBackground(ctx);
-  drawGround(ctx);
+// ============================================================
+// PLATAFORMAS — estilo cyberpunk/neon
+// ============================================================
+function drawPlatforms(ctx){
+  var z = getZone();
+  var neonColor = z === 1 ? 'rgba(0,255,136,'
+                : z === 2 ? 'rgba(0,200,255,'
+                : 'rgba(255,80,80,';
+
+  PLATFORMS.forEach(function(pl){
+    var sx = Math.round(pl.x - camX);
+
+    // Culling — não desenha plataformas fora da tela
+    if(sx + pl.w < -10 || sx > 810) return;
+
+    // Sombra
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.fillRect(sx + 4, pl.y + 6, pl.w, pl.h);
+
+    // Corpo da plataforma
+    ctx.fillStyle = '#1a1a28';
+    ctx.fillRect(sx, pl.y, pl.w, pl.h);
+
+    // Detalhe superior (brilho)
+    ctx.fillStyle = '#262636';
+    ctx.fillRect(sx, pl.y, pl.w, 5);
+
+    // Borda inferior escura
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(sx, pl.y + pl.h - 3, pl.w, 3);
+
+    // Linha neon embaixo
+    ctx.fillStyle = neonColor + '0.7)';
+    ctx.fillRect(sx, pl.y + pl.h - 2, pl.w, 2);
+
+    // Glow neon
+    ctx.fillStyle = neonColor + '0.12)';
+    ctx.fillRect(sx, pl.y + pl.h, pl.w, 4);
+
+    // Divisórias verticais estilo painel metálico
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = 1;
+    for(var bx = sx + 44; bx < sx + pl.w; bx += 44){
+      ctx.beginPath();
+      ctx.moveTo(bx, pl.y);
+      ctx.lineTo(bx, pl.y + pl.h);
+      ctx.stroke();
+    }
+
+    // Detalhe de luz no canto esquerdo
+    ctx.fillStyle = neonColor + '0.15)';
+    ctx.fillRect(sx + 3, pl.y + 3, 6, pl.h - 6);
+  });
+}
+
+// ============================================================
+// FUNÇÃO PRINCIPAL — chama tudo na ordem certa
+// Usada pelo game.js no loop principal
+// ============================================================
+function renderScene(ctx, W, H){
+  drawBg(ctx, W, H);
+  drawZoneTransition(ctx, W, H);
+  drawGround(ctx, W, H);
   drawPlatforms(ctx);
 }
