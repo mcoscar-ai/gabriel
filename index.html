@@ -17,6 +17,7 @@
 <script src="js/renderer.js"></script>
 <script src="js/enemies.js"></script>
 <script src="js/hud.js"></script>
+<script src="js/screens.js"></script>
 <script>
   var C = document.getElementById('c');
   var X = C.getContext('2d');
@@ -36,8 +37,26 @@
     spawnEnemies();
     function loop(){
       requestAnimationFrame(loop);
+
+      // Telas de intro/título/gameover/vitória
+      if(GAME_STATE !== 'playing'){
+        X.clearRect(0, 0, W, H);
+        drawScreen(X, W, H);
+        return;
+      }
+
+      // JOGO ATIVO
+      // Verifica game over
+      if(P.dead){
+        GAMEOVER.timer     = 0;
+        GAMEOVER.showRetry = false;
+        GAME_STATE         = 'gameover';
+        return;
+      }
+
       // Render cenário
       renderScene(X, W, H);
+
       // Colisão balas do player com inimigos
       for(var i = BULLETS.length-1; i>=0; i--){
         var b = BULLETS[i];
@@ -52,6 +71,7 @@
           }
         }
       }
+
       updatePlayer();
       updateEnemies();
       drawEnemies(X);
