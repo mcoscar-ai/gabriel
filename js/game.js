@@ -16,35 +16,35 @@ var SERVER_TYPES = {
 
 // Posições dos servidores
 var SERVER_SPAWNS = [
-  // ZONA 1
-  {x:300,  y:GROUND_Y-64,  type:'normal', zone:1},
-  {x:480,  y:GROUND_Y-64,  type:'normal', zone:1},
-  {x:660,  y:GROUND_Y-64,  type:'normal', zone:1},
-  {x:820,  y:GROUND_Y-64,  type:'normal', zone:1},
-  {x:900,  y:GROUND_Y-64,  type:'normal', zone:1},
-  {x:1020, y:GROUND_Y-64,  type:'normal', zone:1},
-  {x:1150, y:GROUND_Y-64,  type:'normal', zone:1},
-  {x:1280, y:GROUND_Y-96,  type:'boss',   zone:1},
+  // ZONA 1 (x: 300 - 1200) — bem espalhados
+  {x:320,  y:GROUND_Y-64,  type:'normal', zone:1},
+  {x:520,  y:GROUND_Y-64,  type:'normal', zone:1},
+  {x:700,  y:GROUND_Y-64,  type:'normal', zone:1},
+  {x:860,  y:GROUND_Y-64,  type:'normal', zone:1},
+  {x:980,  y:GROUND_Y-64,  type:'normal', zone:1},
+  {x:1080, y:GROUND_Y-64,  type:'normal', zone:1},
+  {x:1180, y:GROUND_Y-64,  type:'normal', zone:1},
+  {x:1310, y:GROUND_Y-96,  type:'boss',   zone:1},
 
-  // ZONA 2
+  // ZONA 2 (x: 1400 - 2500) — bem espalhados
   {x:1450, y:GROUND_Y-64,  type:'normal', zone:2},
   {x:1620, y:GROUND_Y-64,  type:'normal', zone:2},
-  {x:1800, y:GROUND_Y-64,  type:'normal', zone:2},
-  {x:1980, y:GROUND_Y-64,  type:'normal', zone:2},
+  {x:1780, y:GROUND_Y-64,  type:'normal', zone:2},
+  {x:1950, y:GROUND_Y-64,  type:'normal', zone:2},
   {x:2100, y:GROUND_Y-64,  type:'normal', zone:2},
-  {x:2250, y:GROUND_Y-64,  type:'normal', zone:2},
-  {x:2430, y:GROUND_Y-64,  type:'normal', zone:2},
+  {x:2280, y:GROUND_Y-64,  type:'normal', zone:2},
+  {x:2450, y:GROUND_Y-64,  type:'normal', zone:2},
   {x:2580, y:GROUND_Y-96,  type:'boss',   zone:2},
 
-  // ZONA 3
+  // ZONA 3 (x: 2700 - 3800) — bem espalhados
   {x:2750, y:GROUND_Y-64,  type:'normal', zone:3},
   {x:2920, y:GROUND_Y-64,  type:'normal', zone:3},
-  {x:3100, y:GROUND_Y-64,  type:'normal', zone:3},
-  {x:3250, y:GROUND_Y-64,  type:'normal', zone:3},
+  {x:3080, y:GROUND_Y-64,  type:'normal', zone:3},
+  {x:3240, y:GROUND_Y-64,  type:'normal', zone:3},
   {x:3400, y:GROUND_Y-64,  type:'normal', zone:3},
-  {x:3550, y:GROUND_Y-64,  type:'normal', zone:3},
-  {x:3700, y:GROUND_Y-64,  type:'normal', zone:3},
-  {x:3850, y:GROUND_Y-96,  type:'boss',   zone:3},
+  {x:3560, y:GROUND_Y-64,  type:'normal', zone:3},
+  {x:3720, y:GROUND_Y-64,  type:'normal', zone:3},
+  {x:3870, y:GROUND_Y-96,  type:'boss',   zone:3},
 ];
 
 function spawnServers(){
