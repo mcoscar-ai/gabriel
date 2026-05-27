@@ -25,7 +25,7 @@ var P = {
   vx:0, vy:0,
   w:GAB_W, h:GAB_H,
   dir:1, onGround:false, jCount:0,
-  crouching:false, lives:3, inv:0,
+  crouching:false, lives:15, inv:0,
   score:0, dead:false,
   animFrame:0, runTick:0, runToggle:0,
   fireCool:0,
