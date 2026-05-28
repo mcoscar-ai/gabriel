@@ -109,9 +109,9 @@ if(IS_MOBILE){
   function layoutBtns(){
     var W = window.innerWidth;
     var H = window.innerHeight;
-    var S = Math.min(W, H) * 0.14; // tamanho dos botões
-    var M = Math.min(W, H) * 0.04; // margem das bordas
-    var G = Math.min(W, H) * 0.05; // gap entre botões
+    var S = Math.min(W, H) * 0.17; // tamanho dos botões — maior
+    var M = Math.min(W, H) * 0.03; // margem das bordas
+    var G = Math.min(W, H) * 0.07; // gap entre botões — mais espaço
 
     // ---- LADO ESQUERDO ----
     // ◄ e ► na mesma linha
