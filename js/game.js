@@ -236,6 +236,7 @@ function gameLoop(ctx,W,H){
   }
   renderScene(ctx,W,H);
   updateServers(); drawServers(ctx);
+  updateItems();   drawItems(ctx);
   for(var i=BULLETS.length-1;i>=0;i--){
     var b=BULLETS[i];
     for(var j=0;j<ENEMIES.length;j++){
