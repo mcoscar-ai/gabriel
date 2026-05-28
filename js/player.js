@@ -109,7 +109,6 @@ function fireBullet(){
     x: P.dir===1 ? P.x+P.w : P.x-12,
     y: P.y+P.h*0.35,
     vx: P.dir*9, w:12, h:6, active:true,
-    startX: P.x, // posição inicial para calcular alcance
   });
 }
 
@@ -118,11 +117,7 @@ function updateBullets(){
     var b=BULLETS[i];
     if(!b.active){ BULLETS.splice(i,1); continue; }
     b.x+=b.vx;
-    // Remove se passou 300px de alcance OU saiu da tela
-    var traveled = Math.abs(b.x - b.startX);
-    if(traveled > 600 || b.x<camX-50 || b.x>camX+850){
-      BULLETS.splice(i,1);
-    }
+    if(b.x<camX-50||b.x>camX+850) BULLETS.splice(i,1);
   }
 }
 
