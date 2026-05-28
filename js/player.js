@@ -120,7 +120,7 @@ function updateBullets(){
     b.x+=b.vx;
     // Remove se passou 300px de alcance OU saiu da tela
     var traveled = Math.abs(b.x - b.startX);
-    if(traveled > 300 || b.x<camX-50 || b.x>camX+850){
+    if(traveled > 600 || b.x<camX-50 || b.x>camX+850){
       BULLETS.splice(i,1);
     }
   }
