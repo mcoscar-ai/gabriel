@@ -245,3 +245,50 @@ if(IS_MOBILE){
 INPUT.clearJump = function(){
   INPUT.jumpPressed = false;
 };
+
+// ============================================================
+// GAMEPAD — Controle Xbox no browser Edge
+// ============================================================
+var GAMEPAD = {
+  _jumpHeld: false,
+};
+
+INPUT.updateGamepad = function(){
+  var gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+  var gp = null;
+
+  // Pega o primeiro controle conectado
+  for(var i = 0; i < gamepads.length; i++){
+    if(gamepads[i]){ gp = gamepads[i]; break; }
+  }
+  if(!gp) return;
+
+  // ---- BOTÕES Xbox ----
+  // Índices padrão Xbox:
+  // 0=A, 1=B, 2=X, 3=Y
+  // 12=D-pad cima, 13=D-pad baixo, 14=D-pad esquerda, 15=D-pad direita
+  // Analógico esquerdo: axes[0]=horizontal, axes[1]=vertical
+
+  var dLeft  = gp.buttons[14] && gp.buttons[14].pressed || gp.axes[0] < -0.5;
+  var dRight = gp.buttons[15] && gp.buttons[15].pressed || gp.axes[0] >  0.5;
+  var dDown  = gp.buttons[13] && gp.buttons[13].pressed || gp.axes[1] >  0.5;
+  var btnA   = gp.buttons[0]  && gp.buttons[0].pressed;  // A = pulo
+  var btnX   = gp.buttons[2]  && gp.buttons[2].pressed;  // X = atirar
+  var btnB   = gp.buttons[1]  && gp.buttons[1].pressed;  // B = atirar também
+  var btnRB  = gp.buttons[5]  && gp.buttons[5].pressed;  // RB = atirar
+
+  // Movimento
+  INPUT.left  = dLeft;
+  INPUT.right = dRight;
+  INPUT.down  = dDown;
+  INPUT.fire  = btnX || btnB || btnRB;
+
+  // Pulo — dispara uma vez por pressão (não repete segurando)
+  if(btnA && !GAMEPAD._jumpHeld){
+    INPUT.jumpPressed = true;
+    GAMEPAD._jumpHeld = true;
+  }
+  if(!btnA){
+    GAMEPAD._jumpHeld = false;
+  }
+};
