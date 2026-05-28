@@ -6,7 +6,7 @@ var ENEMY_TYPES={
   light:{key:'guard_light',hp:2,speed:2.8,detectRange:220,attackRange:50,damage:1,score:100,canShoot:false,shootCool:0,w:40,h:110,flipDefault:false},
   normal:{key:'guard_normal',hp:6,speed:1.8,detectRange:280,attackRange:200,damage:1,score:200,canShoot:true,shootCool:90,w:44,h:115,flipDefault:true},
   armored:{key:'guard_armored',hp:8,speed:1.0,detectRange:180,attackRange:120,damage:2,score:400,canShoot:false,shootCool:0,w:50,h:120,flipDefault:false},
-  drone:{key:'drone',hp:3,speed:2.0,detectRange:300,attackRange:250,damage:1,score:300,canShoot:true,shootCool:60,w:60,h:40,flipDefault:false,flying:true,flyY:160},
+  drone:{key:'drone',hp:3,speed:2.0,detectRange:300,attackRange:250,damage:1,score:300,canShoot:true,shootCool:60,w:60,h:40,flipDefault:false,flying:true,flyY:120},
 };
 
 function spawnEnemies(){
@@ -286,7 +286,33 @@ function updateEnemies(){
 }
 
 function fireEnemyBullet(e){
-  ENEMY_BULLETS.push({x:e.dir===1?e.x+e.w:e.x-10,y:e.y+e.h*0.4,vx:e.dir*5,w:10,h:5,active:true});
+  if(e.flying){
+    // Drone — atira em direção à posição atual do Gabriel (ângulo)
+    var tx = P.x + P.w/2;
+    var ty = P.y + P.h/2;
+    var bx = e.x + e.w/2;
+    var by = e.y + e.h/2;
+    var dx = tx - bx;
+    var dy = ty - by;
+    var dist = Math.sqrt(dx*dx + dy*dy);
+    var speed = 6;
+    ENEMY_BULLETS.push({
+      x:bx, y:by,
+      vx:(dx/dist)*speed,
+      vy:(dy/dist)*speed,
+      w:10, h:10, active:true,
+      fromDrone:true, // marca como bala de drone
+    });
+  } else {
+    // Terrestres — atira na altura do peito (passa por cima quando agachado)
+    ENEMY_BULLETS.push({
+      x:e.dir===1?e.x+e.w:e.x-10,
+      y:e.y+e.h*0.35, // altura do peito
+      vx:e.dir*5, vy:0,
+      w:10, h:5, active:true,
+      fromDrone:false,
+    });
+  }
 }
 
 function updateEnemyBullets(){
@@ -294,10 +320,26 @@ function updateEnemyBullets(){
     var b=ENEMY_BULLETS[i];
     if(!b.active){ENEMY_BULLETS.splice(i,1);continue;}
     b.x+=b.vx;
+    b.y+=b.vy||0; // suporte a vy para balas do drone
     if(b.x<camX-50||b.x>camX+850){ENEMY_BULLETS.splice(i,1);continue;}
+    if(b.y>GROUND_Y+20){ENEMY_BULLETS.splice(i,1);continue;} // caiu no chão
+
     if(!P.dead&&P.inv===0){
-      if(b.x+b.w>P.x&&b.x<P.x+P.w&&b.y+b.h>P.y&&b.y<P.y+P.h){
-        playerHit(false);ENEMY_BULLETS.splice(i,1);
+      // Hitbox do Gabriel — menor quando agachado
+      var pH  = P.crouching ? Math.round(P.h*0.55) : P.h;
+      var pY  = P.y + (P.h - pH); // alinha os pés
+
+      // Balas terrestres NÃO acertam Gabriel agachado
+      // (passam por cima pois são disparadas na altura do peito do inimigo)
+      if(!b.fromDrone && P.crouching){
+        // Bala passa acima — não colide
+        continue;
+      }
+
+      if(b.x+b.w>P.x && b.x<P.x+P.w &&
+         b.y+b.h>pY   && b.y<pY+pH){
+        playerHit(false);
+        ENEMY_BULLETS.splice(i,1);
       }
     }
   }
@@ -347,8 +389,17 @@ function drawEnemies(ctx){
   // Balas
   for(var i=0;i<ENEMY_BULLETS.length;i++){
     var b=ENEMY_BULLETS[i],bx=Math.round(b.x-camX);
-    ctx.fillStyle='#ff6600';ctx.fillRect(bx,Math.round(b.y),b.w,b.h);
-    ctx.fillStyle='rgba(255,100,0,0.3)';ctx.fillRect(bx-2,Math.round(b.y)-2,b.w+4,b.h+4);
+    if(b.fromDrone){
+      // Bala do drone — azul elétrica
+      ctx.fillStyle='#00AAFF';
+      ctx.beginPath();ctx.arc(bx+5,Math.round(b.y)+5,5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='rgba(0,170,255,0.3)';
+      ctx.beginPath();ctx.arc(bx+5,Math.round(b.y)+5,9,0,Math.PI*2);ctx.fill();
+    } else {
+      // Bala terrestre — laranja
+      ctx.fillStyle='#ff6600';ctx.fillRect(bx,Math.round(b.y),b.w,b.h);
+      ctx.fillStyle='rgba(255,100,0,0.3)';ctx.fillRect(bx-2,Math.round(b.y)-2,b.w+4,b.h+4);
+    }
   }
 }
 
