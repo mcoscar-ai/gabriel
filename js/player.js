@@ -39,6 +39,7 @@ var BULLETS = [];
 function updatePlayer(){
   if(P.dead) return;
   INPUT._updateKeyboard();
+  if(INPUT.updateGamepad) INPUT.updateGamepad();
 
   var moving = false;
   if(INPUT.left){  P.vx=-5; P.dir=-1; moving=true; }
