@@ -389,6 +389,8 @@ function initGame(){
   camX = 0;
   BULLETS = []; ENEMY_BULLETS = [];
   spawnEnemies();
+  spawnServers();
+  spawnItems();
   HUD.lastScore = 0; HUD.scoreFlash = 0;
   HUD.zoneMsg = ''; HUD.zoneMsgTimer = 0; HUD.lastZone = 0;
   INTRO.currentLine = 0; INTRO.currentChar = 0;
