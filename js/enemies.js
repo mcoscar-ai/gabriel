@@ -1,10 +1,10 @@
 // enemies.js — 135 inimigos + drone + spray de pimenta
-var STATE_PATROL='patrol',STATE_CHASE='chase',STATE_ATTACK='attack',STATE_DEAD='dead';
+var STATE_PATROL='patrol',STATE_CHASE='chase',STATE_ATTACK='attack',STATE_DEAD='dead',STATE_FLEE='flee';
 var ENEMIES=[],ENEMY_BULLETS=[],PEPPER_CLOUDS=[];
 
 var ENEMY_TYPES={
   light:{key:'guard_light',hp:2,speed:2.8,detectRange:220,attackRange:50,damage:1,score:100,canShoot:false,shootCool:0,w:40,h:110,flipDefault:false},
-  normal:{key:'guard_normal',hp:6,speed:1.8,detectRange:280,attackRange:200,damage:1,score:200,canShoot:true,shootCool:90,w:44,h:115,flipDefault:false},
+  normal:{key:'guard_normal',hp:6,speed:1.8,detectRange:280,attackRange:200,damage:1,score:200,canShoot:true,shootCool:90,w:44,h:115,flipDefault:true},
   armored:{key:'guard_armored',hp:8,speed:1.0,detectRange:180,attackRange:120,damage:2,score:400,canShoot:false,shootCool:0,w:50,h:120,flipDefault:false},
   drone:{key:'drone',hp:3,speed:2.0,detectRange:300,attackRange:250,damage:1,score:300,canShoot:true,shootCool:60,w:60,h:40,flipDefault:false,flying:true,flyY:160},
 };
@@ -78,6 +78,8 @@ function spawnEnemies(){
       jumpCool:0,
       // Spray pimenta (só armored)
       sprayCool:0,sprayActive:false,
+      // Drone
+      attackCount:0,attackTimer:0,fleeDir:1,fleeTimer:0,
     });
   }
 }
@@ -168,21 +170,53 @@ function updateEnemies(){
           if(e.x<e.spawnX-e.patrolDist)e.dir=1;
           if(e.x>e.spawnX+e.patrolDist)e.dir=-1;
           e.bobTick++;e.y=e.flyY+Math.sin(e.bobTick*0.05)*15;
-          if(dist<e.detectRange&&!P.dead)e.state=STATE_CHASE;
+          if(dist<e.detectRange&&!P.dead){
+            e.state=STATE_CHASE;
+            e.attackCount=0; // reseta contador de tiros
+          }
           break;
         case STATE_CHASE:
-          e.dir=dx>0?1:-1;e.vx=e.dir*e.speed*1.2;
+          e.dir=dx>0?1:-1;e.vx=e.dir*e.speed*1.5;
           e.bobTick++;e.y=e.flyY+Math.sin(e.bobTick*0.08)*10;
           if(dist>e.detectRange*1.5||P.dead){e.state=STATE_PATROL;e.vx=0;}
-          if(dist<e.attackRange){e.state=STATE_ATTACK;e.vx=0;}
+          if(dist<e.attackRange){
+            e.state=STATE_ATTACK;
+            e.vx=0;
+            e.attackCount=0;
+            e.attackTimer=120; // 2 segundos para atacar
+          }
           break;
         case STATE_ATTACK:
-          e.dir=dx>0?1:-1;e.vx=0;
+          e.dir=dx>0?1:-1;
           e.bobTick++;e.y=e.flyY+Math.sin(e.bobTick*0.08)*8;
+          e.attackTimer--;
           e.shootCool--;
-          if(e.shootCool<=0){fireEnemyBullet(e);e.shootCool=e.maxShootCool;}
-          if(dist>e.attackRange*1.2)e.state=STATE_CHASE;
-          if(dist>e.detectRange*1.5||P.dead)e.state=STATE_PATROL;
+          // Dispara até 2 tiros
+          if(e.shootCool<=0&&e.attackCount<2){
+            fireEnemyBullet(e);
+            e.shootCool=30; // intervalo entre os 2 tiros
+            e.attackCount++;
+          }
+          // Após 2 segundos ou 2 tiros — sai voando rápido
+          if(e.attackTimer<=0||e.attackCount>=2){
+            e.state=STATE_FLEE;
+            e.fleeDir=e.dir*-1; // foge na direção oposta
+            e.fleeTimer=120; // 2 segundos fugindo
+          }
+          break;
+        case 'flee':
+          e.dir=e.fleeDir;
+          e.vx=e.dir*e.speed*3; // voa rápido
+          e.y=Math.max(50,e.y-1); // sobe enquanto foge
+          e.bobTick++;
+          e.fleeTimer--;
+          if(e.fleeTimer<=0){
+            // Volta para patrulha
+            e.state=STATE_PATROL;
+            e.y=e.flyY;
+            e.vx=0;
+            e.spawnX=e.x; // nova posição de patrulha
+          }
           break;
       }
       e.x+=e.vx;
