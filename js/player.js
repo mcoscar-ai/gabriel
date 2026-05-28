@@ -1,24 +1,27 @@
 // player.js — Gabriel: movimento, física, animação, tiro
-// Requer: assets.js, input.js
-
 var GROUND_Y  = 338;
-var GW        = 4000;
+var GW        = 96000; // 3 zonas de 32000px cada
 var GAB_H     = 110;
 var GAB_W     = 40;
 var camX      = 0;
 
-var PLATFORMS = [
-  {x:650,  y:GROUND_Y-90,  w:160, h:16},
-  {x:1000, y:GROUND_Y-140, w:130, h:16},
-  {x:1350, y:GROUND_Y-100, w:170, h:16},
-  {x:1700, y:GROUND_Y-150, w:140, h:16},
-  {x:2050, y:GROUND_Y-110, w:160, h:16},
-  {x:2400, y:GROUND_Y-160, w:130, h:16},
-  {x:2750, y:GROUND_Y-120, w:170, h:16},
-  {x:3100, y:GROUND_Y-150, w:140, h:16},
-  {x:3450, y:GROUND_Y-110, w:160, h:16},
-  {x:3750, y:GROUND_Y-140, w:130, h:16},
-];
+var PLATFORMS = [];
+
+// Gera plataformas automaticamente a cada 350px pelo mundo todo
+(function(){
+  var configs = [
+    {dy:-90, w:160}, {dy:-140, w:130}, {dy:-100, w:170},
+    {dy:-150, w:140}, {dy:-110, w:160}, {dy:-160, w:130},
+    {dy:-120, w:170}, {dy:-150, w:140}, {dy:-110, w:160},
+    {dy:-140, w:130},
+  ];
+  var ci = 0;
+  for(var x = 650; x < GW - 500; x += 350){
+    var c = configs[ci % configs.length];
+    PLATFORMS.push({x:x, y:GROUND_Y+c.dy, w:c.w, h:16});
+    ci++;
+  }
+})();
 
 var P = {
   x:150, y:GROUND_Y-GAB_H,
@@ -71,6 +74,7 @@ function updatePlayer(){
   if(P.vy>=0){
     for(var i=0;i<PLATFORMS.length;i++){
       var pl=PLATFORMS[i];
+      if(Math.abs(pl.x - P.x) > 500) continue; // culling
       var prev=P.y+P.h-P.vy;
       if(P.x+P.w-4>pl.x && P.x+4<pl.x+pl.w && prev<=pl.y && P.y+P.h>=pl.y){
         P.y=pl.y-P.h; P.vy=0; P.onGround=true; P.jCount=0;
