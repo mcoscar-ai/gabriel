@@ -42,7 +42,8 @@ var INTRO = {
   charTimer:   0,
   lineTimer:   0,
   done:        false,
-  doneTimer:   0,  // delay após terminar antes de aceitar toque
+  doneTimer:   0,
+  touchSkips:  0,  // conta toques para pular a intro
 };
 
 function updateIntro(){
@@ -391,7 +392,7 @@ function initGame(){
   HUD.lastScore = 0; HUD.scoreFlash = 0;
   HUD.zoneMsg = ''; HUD.zoneMsgTimer = 0; HUD.lastZone = 0;
   INTRO.currentLine = 0; INTRO.currentChar = 0;
-  INTRO.charTimer = 0; INTRO.lineTimer = 0; INTRO.done = false; INTRO.doneTimer = 0;
+  INTRO.charTimer = 0; INTRO.lineTimer = 0; INTRO.done = false; INTRO.doneTimer = 0; INTRO.touchSkips = 0;
   TITLE.alpha = 0; TITLE.glitchTimer = 0;
   GAMEOVER.timer = 0; GAMEOVER.showRetry = false;
   WIN.timer = 0; WIN.alpha = 0;
@@ -406,6 +407,12 @@ window.addEventListener('keydown', function(e){
 });
 
 document.addEventListener('touchstart', function(e){
+  // Durante a intro — conta QUALQUER toque na tela para pular
+  if(GAME_STATE === 'intro'){
+    handleScreenInput(true);
+    return;
+  }
+  // Durante o jogo — ignora toques nos botões de controle
   var el = document.elementFromPoint(
     e.changedTouches[0].clientX,
     e.changedTouches[0].clientY
@@ -417,13 +424,15 @@ document.addEventListener('touchstart', function(e){
 function handleScreenInput(isTouch){
   if(GAME_STATE === 'intro'){
     if(!INTRO.done){
-      if(!isTouch){
+      // 3 toques ou qualquer tecla pula a intro
+      if(isTouch) INTRO.touchSkips++;
+      if(!isTouch || INTRO.touchSkips >= 3){
         INTRO.currentLine = INTRO.lines.length - 1;
         INTRO.currentChar = INTRO.lines[INTRO.currentLine].length;
         INTRO.done = true;
         INTRO.doneTimer = 0;
       }
-    } else if(INTRO.doneTimer > 60){ // aguarda 1 segundo antes de aceitar toque
+    } else if(INTRO.doneTimer > 60){
       TITLE.alpha = 0;
       GAME_STATE = 'title';
     }
