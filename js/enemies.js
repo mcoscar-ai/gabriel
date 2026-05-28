@@ -6,7 +6,7 @@ var ENEMY_TYPES={
   light:{key:'guard_light',hp:2,speed:2.8,detectRange:220,attackRange:50,damage:1,score:100,canShoot:false,shootCool:0,w:40,h:110,flipDefault:false},
   normal:{key:'guard_normal',hp:6,speed:1.8,detectRange:280,attackRange:200,damage:1,score:200,canShoot:true,shootCool:90,w:44,h:115,flipDefault:true},
   armored:{key:'guard_armored',hp:8,speed:1.0,detectRange:180,attackRange:120,damage:2,score:400,canShoot:false,shootCool:0,w:50,h:120,flipDefault:false},
-  drone:{key:'drone',hp:3,speed:2.0,detectRange:300,attackRange:250,damage:1,score:300,canShoot:true,shootCool:60,w:60,h:40,flipDefault:false,flying:true,flyY:120},
+  drone:{key:'drone',hp:3,speed:2.0,detectRange:300,attackRange:250,damage:1,score:300,canShoot:true,shootCool:60,w:60,h:40,flipDefault:false,flying:true,flyY:200},
 };
 
 function spawnEnemies(){
