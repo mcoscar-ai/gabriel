@@ -20,6 +20,7 @@
 <script src="js/hud.js"></script>
 <script src="js/screens.js"></script>
 <script src="js/game.js"></script>
+<script src="js/audio.js"></script>
 <script>
   var C = document.getElementById('c');
   var X = C.getContext('2d');
@@ -35,11 +36,47 @@
   window.addEventListener('resize', resize);
   window.addEventListener('orientationchange', function(){ setTimeout(resize, 200); });
 
+  // Áudio só inicia após primeiro toque/clique (regra dos browsers)
+  var audioStarted = false;
+  function startAudio(){
+    if(audioStarted) return;
+    audioStarted = true;
+    loadAllAudio();
+  }
+  document.addEventListener('click',     startAudio, {once:true});
+  document.addEventListener('touchstart',startAudio, {once:true});
+  document.addEventListener('keydown',   startAudio, {once:true});
+
   loadAllAssets().then(function(){
     spawnEnemies();
     spawnServers();
+
+    // SFX integrados
+    var _lastBullets = 0;
+    var _lastLives   = 15;
+    var _lastServers = 0;
+
     function loop(){
       requestAnimationFrame(loop);
+
+      // Atualiza música
+      if(audioStarted) updateMusic();
+
+      // SFX — pulo
+      if(INPUT.jumpPressed && P.jCount === 0) playSFX('sfx_jump');
+
+      // SFX — tiro
+      if(BULLETS.length > _lastBullets) playSFX('sfx_shot');
+      _lastBullets = BULLETS.length;
+
+      // SFX — hit (inimigo morreu)
+      var deadCount = ENEMIES.filter(function(e){ return e.state==='dead'&&e.deadTimer===1; }).length;
+      if(deadCount > 0) playSFX('sfx_hit');
+
+      // SFX — explosão (servidor destruído)
+      var serverDead = SERVERS.filter(function(s){ return s.dead&&s.deadTimer===1; }).length;
+      if(serverDead > 0) playSFX('sfx_explosion');
+
       gameLoop(X, W, H);
     }
     loop();
